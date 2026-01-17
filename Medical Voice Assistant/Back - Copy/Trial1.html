@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Voice Symptom Checker</title>
+  <style>
+    body { font-family: Arial; background: #f4f4f4; padding: 20px; text-align: center; }
+    .container { max-width: 600px; margin: auto; padding: 20px; background: white; border-radius: 8px; }
+    button { padding: 10px 20px; font-size: 16px; margin: 10px; cursor: pointer; }
+    .response { margin-top: 20px; padding: 15px; background: #eee; border-radius: 5px; text-align: left; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🎤 Voice Symptom Checker</h2>
+    <button onclick="startVoice()">Start Talking</button>
+    <div id="response" class="response"></div>
+    <h2>🎤 Voice Symptom Checker</h2>
+    <button onclick="startRecognition()">Start Talking</button>
+    <p id="output"></p>
+    <p id="response"></p>
+  </div>
+
+  <script>
+    function startVoice() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "en-IN";
+      recognition.start();
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        document.getElementById("response").innerHTML = "🗣 You said: " + transcript;
+
+        // Split symptoms into words (simple version)
+        const symptoms = transcript.split(" ");
+
+        fetch("http://127.0.0.1:5001/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ symptoms })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            document.getElementById("response").innerHTML += "<br>❌ " + data.error;
+          } else {
+            document.getElementById("response").innerHTML += `
+              <br>🩺 <strong>Disease:</strong> ${data.disease}
+              <br>📊 <strong>Confidence:</strong> ${data.confidence}
+              <br>💊 <strong>Medications:</strong> ${data.medications.join(", ")}
+            `;
+          }
+        });
+      };
+
+      recognition.onerror = function(event) {
+        alert("Voice error: " + event.error);
+      };
+
+function startRecognition() {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = "en-US";
+    recognition.start();
+
+    recognition.onresult = async function(event) {
+        let speechResult = event.results[0][0].transcript;
+        document.getElementById("output").innerHTML = "🗣 You said: " + speechResult;
+
+        // Send to backend
+        let response = await fetch("http://127.0.0.1:5001/predict", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ symptoms: speechResult.toLowerCase().split(" ") }) 
+        });
+
+        let data = await response.json();
+        console.log(data);
+
+        if (data.error) {
+            document.getElementById("response").innerHTML = "⚠️ " + data.error;
+        } else {
+            document.getElementById("response").innerHTML = `
+                🧾 Predicted Disease: <b>${data.disease}</b> <br>
+                ✅ Confidence: ${data.confidence} <br>
+                💊 Medications: ${data.medications.join(", ")}
+            `;
+        }
+    };
+}
+
+    }
+  </script>
+</body>
+</html>

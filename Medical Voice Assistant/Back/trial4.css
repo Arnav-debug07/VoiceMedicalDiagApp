@@ -1,0 +1,173 @@
+:root{
+  --bg: #f7f8fb;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --accent: #4f46e5;        /* indigo */
+  --accent-2: #06b6d4;      /* teal */
+  --success: #10b981;
+  --danger: #ef4444;
+  --glass: rgba(15,23,42,0.04);
+  --radius: 14px;
+  --shadow: 0 6px 18px rgba(15,23,42,0.08);
+  --small-shadow: 0 4px 10px rgba(15,23,42,0.06);
+  --mono: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+* { box-sizing: border-box; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+html,body{ height:100%; margin:0; font-family:var(--mono); background: linear-gradient(180deg, var(--bg), #eef2ff 60%); color:#0f172a; }
+
+.card{
+  max-width:720px;
+  margin:40px auto;
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), var(--card));
+  border-radius:var(--radius);
+  padding:28px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(15,23,42,0.04);
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+
+/* Hover lift on wide screens */
+@media (hover:hover) and (min-width:720px){
+  .card:hover{ transform: translateY(-6px); box-shadow: 0 14px 40px rgba(15,23,42,0.09); }
+}
+
+h1{
+  margin:0 0 8px 0;
+  font-size:20px;
+  letter-spacing: -0.2px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.card p{
+  margin:6px 0 18px 0;
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.45;
+}
+
+/* Controls row */
+div > button{
+  -webkit-appearance:none;
+  appearance:none;
+  border:0;
+  font-weight:600;
+  font-size:15px;
+  padding:10px 16px;
+  border-radius:10px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  box-shadow: var(--small-shadow);
+  transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+}
+
+/* Primary start button */
+#startBtn{
+  background: linear-gradient(180deg, var(--accent), #3730a3);
+  color: #fff;
+}
+
+/* Secondary stop button */
+button.secondary, #stopBtn{
+  background: white;
+  color: #111827;
+  border: 1px solid rgba(15,23,42,0.06);
+}
+
+/* Disabled state */
+button:disabled{
+  opacity:0.6;
+  transform: none;
+  cursor:not-allowed;
+  box-shadow:none;
+}
+
+/* micro interactions */
+div > button:active{ transform: translateY(1px) scale(.998); }
+div > button:focus{ outline: 3px solid rgba(79,70,229,0.14); outline-offset: 2px; }
+
+/* Info headings */
+h3{ font-size:13px; margin:18px 0 8px 0; color:#0f172a; opacity:0.9; }
+
+/* Transcript and assistant boxes */
+#transcript, #assistant{
+  min-height:56px;
+  border-radius:10px;
+  padding:12px 14px;
+  background: linear-gradient(180deg, rgba(15,23,42,0.02), rgba(15,23,42,0.01));
+  border: 1px solid rgba(15,23,42,0.03);
+  color: #0b1220;
+  font-size:15px;
+  line-height:1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+/* Assistant special styling for prominence */
+#assistant{
+  background: linear-gradient(180deg, rgba(6,182,212,0.02), rgba(79,70,229,0.02));
+  border-left: 4px solid rgba(79,70,229,0.12);
+  color:#061126;
+  font-weight:600;
+}
+
+/* Status and error */
+.status-line{ display:flex; gap:12px; align-items:center; margin-top:12px; }
+#status{ color:var(--muted); font-size:13px; }
+.warn{ color:var(--danger); font-size:13px; margin-top:6px; }
+
+/* small chips for quick state */
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:13px;
+  color:#fff;
+  background:var(--glass);
+}
+
+/* responsive adjustments */
+@media (max-width:720px){
+  .card{ margin:18px; padding:18px; border-radius:12px; }
+  h1{ font-size:18px; }
+  #transcript,#assistant{ font-size:14px; min-height:64px; }
+  div > button{ width:46%; justify-content:center; padding:10px 12px; }
+}
+
+/* small utility classes */
+.center { display:flex; justify-content:center; gap:8px; align-items:center; }
+.muted { color:var(--muted); font-size:13px; }
+
+/* subtle focus ring for contenteditable-like blocks */
+#transcript:focus, #assistant:focus{
+  outline: 3px solid rgba(6,182,212,0.12);
+  outline-offset: 2px;
+}
+
+/* accessibility: high-contrast variants for keyboard users */
+@media (prefers-contrast: more){
+  #startBtn{ box-shadow:none; border:2px solid #2b2be2; }
+  button.secondary{ border:2px solid #cbd5e1; }
+}
+
+/* small helper for error / success states that your JS can toggle */
+.warn-bg { background: linear-gradient(180deg, rgba(239,68,68,0.05), rgba(239,68,68,0.02)); border-color: rgba(239,68,68,0.08); }
+.success-bg { background: linear-gradient(180deg, rgba(16,185,129,0.04), rgba(16,185,129,0.02)); border-color: rgba(16,185,129,0.08); }
+
+/* tiny animation for transcript updates */
+@keyframes pulseIn {
+  from { transform: translateY(6px); opacity:0; }
+  to { transform:none; opacity:1; }
+}
+#transcript.updated, #assistant.updated {
+  animation: pulseIn .28s ease;
+}
+
+/* end */

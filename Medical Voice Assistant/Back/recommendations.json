@@ -1,0 +1,562 @@
+{
+  "diseases": [
+    {
+      "name": "Common Cold (Upper Respiratory Tract Infection)",
+      "aliases": [
+        "common cold (upper respiratory tract infection)"
+      ],
+      "medications": "paracetamol, cetirizine",
+      "home_remedies": "rest, warm saline gargle, steam inhalation",
+      "empathetic_message": "I understand you may have Common Cold (Upper Respiratory Tract Infection). paracetamol, cetirizine. Try these home remedies: rest, warm saline gargle, steam inhalation."
+    },
+    {
+      "name": "Influenza (Flu)",
+      "aliases": [
+        "influenza (flu)"
+      ],
+      "medications": "paracetamol, antihistamine",
+      "home_remedies": "rest, hydration, warm fluids",
+      "empathetic_message": "I understand you may have Influenza (Flu). paracetamol, antihistamine. Try these home remedies: rest, hydration, warm fluids."
+    },
+    {
+      "name": "COVID-19",
+      "aliases": [
+        "covid-19"
+      ],
+      "medications": "paracetamol, multivitamins",
+      "home_remedies": "rest, fluids, steam inhalation",
+      "empathetic_message": "I understand you may have COVID-19. paracetamol, multivitamins. Try these home remedies: rest, fluids, steam inhalation."
+    },
+    {
+      "name": "Pneumonia",
+      "aliases": [
+        "pneumonia"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "rest, warm fluids",
+      "empathetic_message": "I understand you may have Pneumonia. Try these home remedies: rest, warm fluids."
+    },
+    {
+      "name": "Tuberculosis (TB)",
+      "aliases": [
+        "tuberculosis (tb)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "nutritious diet, rest",
+      "empathetic_message": "I understand you may have Tuberculosis (TB). Try these home remedies: nutritious diet, rest."
+    },
+    {
+      "name": "Asthma",
+      "aliases": [
+        "asthma"
+      ],
+      "medications": "prescribed inhaler only",
+      "home_remedies": "avoid triggers, deep breathing exercises",
+      "empathetic_message": "I understand you may have Asthma. prescribed inhaler only. Try these home remedies: avoid triggers, deep breathing exercises."
+    },
+    {
+      "name": "Chronic Obstructive Pulmonary Disease (COPD)",
+      "aliases": [
+        "chronic obstructive pulmonary disease (copd)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Chronic Obstructive Pulmonary Disease (COPD). "
+    },
+    {
+      "name": "Bronchitis (acute & chronic)",
+      "aliases": [
+        "bronchitis (acute & chronic)"
+      ],
+      "medications": "paracetamol, cough syrup (dextromethorphan)",
+      "home_remedies": "steam inhalation, fluids",
+      "empathetic_message": "I understand you may have Bronchitis (acute & chronic). paracetamol, cough syrup (dextromethorphan). Try these home remedies: steam inhalation, fluids."
+    },
+    {
+      "name": "Type 2 Diabetes Mellitus",
+      "aliases": [
+        "type 2 diabetes mellitus"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "balanced diet, exercise",
+      "empathetic_message": "I understand you may have Type 2 Diabetes Mellitus. Try these home remedies: balanced diet, exercise."
+    },
+    {
+      "name": "Hypertension (High Blood Pressure)",
+      "aliases": [
+        "hypertension (high blood pressure)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "low-salt diet, regular exercise",
+      "empathetic_message": "I understand you may have Hypertension (High Blood Pressure). Try these home remedies: low-salt diet, regular exercise."
+    },
+    {
+      "name": "Heart Disease / Ischemic Heart Disease",
+      "aliases": [
+        "heart disease / ischemic heart disease"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Heart Disease / Ischemic Heart Disease. "
+    },
+    {
+      "name": "Stroke",
+      "aliases": [
+        "stroke"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Stroke. "
+    },
+    {
+      "name": "Arthritis (Osteoarthritis / Rheumatoid)",
+      "aliases": [
+        "arthritis (osteoarthritis / rheumatoid)"
+      ],
+      "medications": "paracetamol, topical NSAID gel",
+      "home_remedies": "gentle stretching, warm compress",
+      "empathetic_message": "I understand you may have Arthritis (Osteoarthritis / Rheumatoid). paracetamol, topical NSAID gel. Try these home remedies: gentle stretching, warm compress."
+    },
+    {
+      "name": "Back Pain (Lower Back Pain)",
+      "aliases": [
+        "back pain (lower back pain)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Back Pain (Lower Back Pain). "
+    },
+    {
+      "name": "Migraine / Tension Headache",
+      "aliases": [
+        "migraine / tension headache"
+      ],
+      "medications": "paracetamol, ibuprofen",
+      "home_remedies": "rest in dark room, hydration",
+      "empathetic_message": "I understand you may have Migraine / Tension Headache. paracetamol, ibuprofen. Try these home remedies: rest in dark room, hydration."
+    },
+    {
+      "name": "Anxiety Disorders",
+      "aliases": [
+        "anxiety disorders"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "meditation, deep breathing",
+      "empathetic_message": "I understand you may have Anxiety Disorders. Try these home remedies: meditation, deep breathing."
+    },
+    {
+      "name": "Depression",
+      "aliases": [
+        "depression"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "counseling, physical activity",
+      "empathetic_message": "I understand you may have Depression. Try these home remedies: counseling, physical activity."
+    },
+    {
+      "name": "Obesity",
+      "aliases": [
+        "obesity"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "healthy diet, daily exercise",
+      "empathetic_message": "I understand you may have Obesity. Try these home remedies: healthy diet, daily exercise."
+    },
+    {
+      "name": "Hyperthyroidism / Hypothyroidism",
+      "aliases": [
+        "hyperthyroidism / hypothyroidism"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Hyperthyroidism / Hypothyroidism. "
+    },
+    {
+      "name": "Kidney disease / Chronic Kidney Disease",
+      "aliases": [
+        "kidney disease / chronic kidney disease"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Kidney disease / Chronic Kidney Disease. "
+    },
+    {
+      "name": "Liver Disease (Hepatitis)",
+      "aliases": [
+        "liver disease (hepatitis)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Liver Disease (Hepatitis). "
+    },
+    {
+      "name": "Gastroenteritis / Diarrheal illness",
+      "aliases": [
+        "gastroenteritis / diarrheal illness"
+      ],
+      "medications": "ORS, loperamide",
+      "home_remedies": "rehydration, BRAT diet",
+      "empathetic_message": "I understand you may have Gastroenteritis / Diarrheal illness. ORS, loperamide. Try these home remedies: rehydration, BRAT diet."
+    },
+    {
+      "name": "Peptic ulcer disease",
+      "aliases": [
+        "peptic ulcer disease"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Peptic ulcer disease. "
+    },
+    {
+      "name": "Gastroesophageal Reflux Disease (GERD)",
+      "aliases": [
+        "gastroesophageal reflux disease (gerd)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Gastroesophageal Reflux Disease (GERD). "
+    },
+    {
+      "name": "Irritable Bowel Syndrome (IBS)",
+      "aliases": [
+        "irritable bowel syndrome (ibs)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Irritable Bowel Syndrome (IBS). "
+    },
+    {
+      "name": "Urinary Tract Infection (UTI)",
+      "aliases": [
+        "urinary tract infection (uti)"
+      ],
+      "medications": "cranberry extract, pain relief",
+      "home_remedies": "drink plenty of water",
+      "empathetic_message": "I understand you may have Urinary Tract Infection (UTI). cranberry extract, pain relief. Try these home remedies: drink plenty of water."
+    },
+    {
+      "name": "Dengue",
+      "aliases": [
+        "dengue"
+      ],
+      "medications": "paracetamol",
+      "home_remedies": "fluids, rest. Avoid NSAIDs",
+      "empathetic_message": "I understand you may have Dengue. paracetamol. Try these home remedies: fluids, rest. Avoid NSAIDs."
+    },
+    {
+      "name": "Malaria",
+      "aliases": [
+        "malaria"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "fluids, rest",
+      "empathetic_message": "I understand you may have Malaria. Try these home remedies: fluids, rest."
+    },
+    {
+      "name": "Typhoid Fever",
+      "aliases": [
+        "typhoid fever"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "hydration, bland diet",
+      "empathetic_message": "I understand you may have Typhoid Fever. Try these home remedies: hydration, bland diet."
+    },
+    {
+      "name": "Chickenpox",
+      "aliases": [
+        "chickenpox"
+      ],
+      "medications": "calamine lotion, paracetamol",
+      "home_remedies": "rest, oatmeal baths",
+      "empathetic_message": "I understand you may have Chickenpox. calamine lotion, paracetamol. Try these home remedies: rest, oatmeal baths."
+    },
+    {
+      "name": "Measles",
+      "aliases": [
+        "measles"
+      ],
+      "medications": "paracetamol, vitamin A supplement",
+      "home_remedies": "rest, fluids",
+      "empathetic_message": "I understand you may have Measles. paracetamol, vitamin A supplement. Try these home remedies: rest, fluids."
+    },
+    {
+      "name": "Hepatitis B / C",
+      "aliases": [
+        "hepatitis b / c"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Hepatitis B / C. "
+    },
+    {
+      "name": "HIV / AIDS",
+      "aliases": [
+        "hiv / aids"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have HIV / AIDS. "
+    },
+    {
+      "name": "Skin Infections (Fungal / Bacterial)",
+      "aliases": [
+        "skin infections (fungal / bacterial)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Skin Infections (Fungal / Bacterial). "
+    },
+    {
+      "name": "Allergies / Allergic Rhinitis",
+      "aliases": [
+        "allergies / allergic rhinitis"
+      ],
+      "medications": "cetirizine, loratadine",
+      "home_remedies": "avoid dust, nasal saline rinse",
+      "empathetic_message": "I understand you may have Allergies / Allergic Rhinitis. cetirizine, loratadine. Try these home remedies: avoid dust, nasal saline rinse."
+    },
+    {
+      "name": "Sinusitis",
+      "aliases": [
+        "sinusitis"
+      ],
+      "medications": "paracetamol, nasal decongestant",
+      "home_remedies": "steam inhalation, rest",
+      "empathetic_message": "I understand you may have Sinusitis. paracetamol, nasal decongestant. Try these home remedies: steam inhalation, rest."
+    },
+    {
+      "name": "Otitis Media (Ear Infection)",
+      "aliases": [
+        "otitis media (ear infection)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Otitis Media (Ear Infection). "
+    },
+    {
+      "name": "Eye infections / Conjunctivitis",
+      "aliases": [
+        "eye infections / conjunctivitis"
+      ],
+      "medications": "lubricating drops",
+      "home_remedies": "clean eyes with sterile water",
+      "empathetic_message": "I understand you may have Eye infections / Conjunctivitis. lubricating drops. Try these home remedies: clean eyes with sterile water."
+    },
+    {
+      "name": "Hypoxia / Respiratory Distress (e.g., due to pneumonia or asthma)",
+      "aliases": [
+        "hypoxia / respiratory distress (e.g., due to pneumonia or asthma)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "rest, warm fluids",
+      "empathetic_message": "I understand you may have Hypoxia / Respiratory Distress (e.g., due to pneumonia or asthma). Try these home remedies: rest, warm fluids."
+    },
+    {
+      "name": "Stroke / Transient Ischemic Attack (TIA)",
+      "aliases": [
+        "stroke / transient ischemic attack (tia)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Stroke / Transient Ischemic Attack (TIA). "
+    },
+    {
+      "name": "Dental Caries / Tooth Decay / Gum Disease",
+      "aliases": [
+        "dental caries / tooth decay / gum disease"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Dental Caries / Tooth Decay / Gum Disease. "
+    },
+    {
+      "name": "Obstructive Sleep Apnea",
+      "aliases": [
+        "obstructive sleep apnea"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Obstructive Sleep Apnea. "
+    },
+    {
+      "name": "Skin conditions: Acne, Eczema, Psoriasis",
+      "aliases": [
+        "skin conditions: acne, eczema, psoriasis"
+      ],
+      "medications": "moisturizer, hydrocortisone cream",
+      "home_remedies": "avoid irritants, use gentle soap",
+      "empathetic_message": "I understand you may have Skin conditions: Acne, Eczema, Psoriasis. moisturizer, hydrocortisone cream. Try these home remedies: avoid irritants, use gentle soap."
+    },
+    {
+      "name": "Gallstones / Gallbladder Disease",
+      "aliases": [
+        "gallstones / gallbladder disease"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Gallstones / Gallbladder Disease. "
+    },
+    {
+      "name": "Gout",
+      "aliases": [
+        "gout"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Gout. "
+    },
+    {
+      "name": "Anemia (Iron deficiency especially)",
+      "aliases": [
+        "anemia (iron deficiency especially)"
+      ],
+      "medications": "iron supplements (if prescribed)",
+      "home_remedies": "leafy greens, iron-rich food",
+      "empathetic_message": "I understand you may have Anemia (Iron deficiency especially). iron supplements (if prescribed). Try these home remedies: leafy greens, iron-rich food."
+    },
+    {
+      "name": "Thyroid disorders (as above)",
+      "aliases": [
+        "thyroid disorders (as above)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Thyroid disorders (as above). "
+    },
+    {
+      "name": "Obstructive disorders / Lung infections like bronchiectasis, etc.",
+      "aliases": [
+        "obstructive disorders / lung infections like bronchiectasis, etc."
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Obstructive disorders / Lung infections like bronchiectasis, etc.. "
+    },
+    {
+      "name": "Viral Hepatitis, other liver infections",
+      "aliases": [
+        "viral hepatitis, other liver infections"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Viral Hepatitis, other liver infections. "
+    },
+    {
+      "name": "COVID long-term effects / Long COVID",
+      "aliases": [
+        "covid long-term effects / long covid"
+      ],
+      "medications": "paracetamol, multivitamins",
+      "home_remedies": "rest, fluids, steam inhalation",
+      "empathetic_message": "I understand you may have COVID long-term effects / Long COVID. paracetamol, multivitamins. Try these home remedies: rest, fluids, steam inhalation."
+    },
+    {
+      "name": "Depression (Major Depressive Disorder)",
+      "aliases": [
+        "depression (major depressive disorder)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "counseling, physical activity",
+      "empathetic_message": "I understand you may have Depression (Major Depressive Disorder). Try these home remedies: counseling, physical activity."
+    },
+    {
+      "name": "Generalized Anxiety Disorder (GAD)",
+      "aliases": [
+        "generalized anxiety disorder (gad)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "meditation, deep breathing",
+      "empathetic_message": "I understand you may have Generalized Anxiety Disorder (GAD). Try these home remedies: meditation, deep breathing."
+    },
+    {
+      "name": "Panic Disorder",
+      "aliases": [
+        "panic disorder"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Panic Disorder. "
+    },
+    {
+      "name": "Social Anxiety Disorder",
+      "aliases": [
+        "social anxiety disorder"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "meditation, deep breathing",
+      "empathetic_message": "I understand you may have Social Anxiety Disorder. Try these home remedies: meditation, deep breathing."
+    },
+    {
+      "name": "Obsessive Compulsive Disorder (OCD)",
+      "aliases": [
+        "obsessive compulsive disorder (ocd)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Obsessive Compulsive Disorder (OCD). "
+    },
+    {
+      "name": "Post-Traumatic Stress Disorder (PTSD)",
+      "aliases": [
+        "post-traumatic stress disorder (ptsd)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Post-Traumatic Stress Disorder (PTSD). "
+    },
+    {
+      "name": "Bipolar Disorder",
+      "aliases": [
+        "bipolar disorder"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Bipolar Disorder. "
+    },
+    {
+      "name": "Schizophrenia",
+      "aliases": [
+        "schizophrenia"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Schizophrenia. "
+    },
+    {
+      "name": "Substance Use Disorder (Addiction)",
+      "aliases": [
+        "substance use disorder (addiction)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Substance Use Disorder (Addiction). "
+    },
+    {
+      "name": "Eating Disorders (Anorexia / Bulimia / Binge Eating)",
+      "aliases": [
+        "eating disorders (anorexia / bulimia / binge eating)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have Eating Disorders (Anorexia / Bulimia / Binge Eating). "
+    },
+    {
+      "name": "ADHD (Attention Deficit Hyperactivity Disorder)",
+      "aliases": [
+        "adhd (attention deficit hyperactivity disorder)"
+      ],
+      "medications": "Please consult a doctor",
+      "home_remedies": "Rest and stay hydrated",
+      "empathetic_message": "I understand you may have ADHD (Attention Deficit Hyperactivity Disorder). "
+    },
+    {
+      "name": "Insomnia / Sleep Disorders",
+      "aliases": [
+        "insomnia / sleep disorders"
+      ],
+      "medications": "melatonin (if pharmacist advises)",
+      "home_remedies": "sleep hygiene, avoid caffeine",
+      "empathetic_message": "I understand you may have Insomnia / Sleep Disorders. melatonin (if pharmacist advises). Try these home remedies: sleep hygiene, avoid caffeine."
+    }
+  ]
+}

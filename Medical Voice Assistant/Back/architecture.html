@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SE Project — Architecture Diagram</title>
+  <style>
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;margin:24px;background:#0f172a;color:#e6eef8}
+    .canvas{background:#0b1220;padding:24px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,.6)}
+    h1{font-size:20px;margin:0 0 8px;color:#e6f0ff}
+    p{margin:0 0 16px;color:#bcd3f7}
+    svg{width:100%;height:720px}
+    .note{font-size:13px;color:#9fb6df;margin-top:12px}
+  </style>
+</head>
+<body>
+  <div class="canvas">
+    <h1>SE Project — Architecture Diagram</h1>
+    <p>Interactive SVG diagram showing major components, data flows and integrations for the project.</p>
+
+    <!-- SVG Diagram -->
+    <svg viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="6" stdDeviation="14" flood-opacity="0.25"/>
+        </filter>
+        <style>
+          .box{fill:#07203a;stroke:#154060;stroke-width:2;rx:12;filter:url(#shadow)}
+          .text{fill:#dff0ff;font-size:13px;font-family:Segoe UI,Roboto,Arial}
+          .small{font-size:12px;fill:#9fc0e6}
+          .arrow{fill:none;stroke:#7fd1ff;stroke-width:2;marker-end:url(#arrowhead)}
+        </style>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#7fd1ff" />
+        </marker>
+      </defs>
+
+      <!-- Frontend Layer -->
+      <rect x="40" y="30" width="330" height="120" class="box" rx="12"/>
+      <text x="60" y="58" class="text">Client / Frontend</text>
+      <text x="60" y="80" class="small">- Wix site embedding chatbot</text>
+      <text x="60" y="96" class="small">- React / Angular / Vanilla HTML UI</text>
+
+      <!-- Chatbot Widget -->
+      <rect x="420" y="30" width="300" height="120" class="box" rx="12"/>
+      <text x="440" y="58" class="text">Chatbot Widget</text>
+      <text x="440" y="80" class="small">- Language selection (EN, HI, MR)</text>
+      <text x="440" y="96" class="small">- Ticket selection, forms, payment flow</text>
+
+      <!-- Backend -->
+      <rect x="760" y="30" width="380" height="180" class="box" rx="12"/>
+      <text x="780" y="58" class="text">Server / Backend (Node.js)</text>
+      <text x="780" y="80" class="small">- server.js (no Express, custom routes)</text>
+      <text x="780" y="96" class="small">- Chatbot logic, booking, QR generation</text>
+      <text x="780" y="112" class="small">- Payment callouts & session handling</text>
+
+      <!-- Database -->
+      <rect x="760" y="230" width="220" height="110" class="box" rx="12"/>
+      <text x="780" y="256" class="text">Database</text>
+      <text x="780" y="276" class="small">- MySQL / PostgreSQL</text>
+      <text x="780" y="292" class="small">- Users, Bookings, Tickets, Payments</text>
+
+      <!-- Image Processing Module -->
+      <rect x="1020" y="230" width="120" height="110" class="box" rx="12"/>
+      <text x="1036" y="256" class="text">Image Proc</text>
+      <text x="1036" y="276" class="small">- Motion correction, CLAHE, SNR</text>
+
+      <!-- Payment Gateway -->
+      <rect x="420" y="230" width="300" height="110" class="box" rx="12"/>
+      <text x="440" y="256" class="text">Payment Gateway</text>
+      <text x="440" y="276" class="small">- UPI / NetBanking / Card (3 options)</text>
+      <text x="440" y="292" class="small">- Redirect flow (new tab)</text>
+
+      <!-- External Services (Email / SMS / QR / OpenAI) -->
+      <rect x="40" y="230" width="330" height="110" class="box" rx="12"/>
+      <text x="60" y="256" class="text">External Integrations</text>
+      <text x="60" y="276" class="small">- Email (SMTP / SendGrid)</text>
+      <text x="60" y="292" class="small">- SMS provider (Twilio/Gupshup), QR generator</text>
+      <text x="60" y="308" class="small">- OpenAI API (for advanced NLU / responses)</text>
+
+      <!-- Admin / Analytics -->
+      <rect x="40" y="380" width="330" height="110" class="box" rx="12"/>
+      <text x="60" y="406" class="text">Admin & Analytics</text>
+      <text x="60" y="426" class="small">- Admin dashboard (React)</text>
+      <text x="60" y="442" class="small">- RStudio reports, usage & waste datasets</text>
+
+      <!-- Files / R Studio -->
+      <rect x="420" y="380" width="300" height="110" class="box" rx="12"/>
+      <text x="440" y="406" class="text">RStudio / Data Processing</text>
+      <text x="440" y="426" class="small">- Statistical analysis, plots, export</text>
+
+      <!-- DevOps -->
+      <rect x="760" y="380" width="380" height="110" class="box" rx="12"/>
+      <text x="780" y="406" class="text">DevOps / Infra</text>
+      <text x="780" y="426" class="small">- Hosting: VPS / Cloud (DigitalOcean, AWS)</text>
+      <text x="780" y="442" class="small">- CI/CD, Backups, SSL, DB snapshots</text>
+
+      <!-- Arrows: Client -> Chatbot -> Backend -->
+      <path d="M370 90 L420 90" class="arrow" />
+      <path d="M720 90 L760 90" class="arrow" />
+
+      <!-- Chatbot -> Payment Gateway -->
+      <path d="M580 150 L580 230" class="arrow" />
+
+      <!-- Backend -> DB -->
+      <path d="M930 210 L930 230" class="arrow" />
+
+      <!-- Backend -> Image Proc -->
+      <path d="M930 270 L1020 270" class="arrow" />
+
+      <!-- Backend -> External Integrations -->
+      <path d="M760 150 L420 150 L420 230" class="arrow" />
+
+      <!-- Backend -> Admin / Analytics -->
+      <path d="M930 210 L660 420" class="arrow" />
+
+      <!-- Admin -> RStudio -->
+      <path d="M370 435 L420 435" class="arrow" />
+
+      <!-- Payment -> Backend callback -->
+      <path d="M570 300 L760 300" class="arrow" />
+
+      <!-- Legend -->
+      <rect x="990" y="520" width="180" height="140" rx="8" fill="#031226" stroke="#143147"/>
+      <text x="1004" y="548" class="text">Legend</text>
+      <text x="1004" y="568" class="small">• Blue boxes = system components</text>
+      <text x="1004" y="586" class="small">• Arrows = data / control flow</text>
+      <text x="1004" y="604" class="small">• QR = generated post-payment</text>
+    </svg>
+
+    <div class="note">Notes: This diagram is intentionally high-level. Open the file, copy the SVG and edit labels if you want a more granular view (sequence diagrams, data model, or network topology).</div>
+  </div>
+</body>
+</html>

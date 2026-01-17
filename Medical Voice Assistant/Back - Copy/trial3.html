@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Voice Symptom Checker</title>
+  <style>
+    body { font-family: Arial; background: #f4f4f4; padding: 20px; text-align: center; }
+    .container { max-width: 600px; margin: auto; padding: 20px; background: white; border-radius: 8px; }
+    button { padding: 10px 20px; font-size: 16px; margin: 10px; cursor: pointer; }
+    .response { margin-top: 20px; padding: 15px; background: #eee; border-radius: 5px; text-align: left; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🎤 Voice Symptom Checker</h2>
+    <button onclick="startVoice()">Start Talking</button>
+    <div id="response" class="response"></div>
+  </div>
+
+  <script>
+    function startVoice() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "en-IN";
+      recognition.start();
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        const responseDiv = document.getElementById("response");
+        responseDiv.innerHTML = "🗣 You said: " + transcript;
+
+        // ✅ Send transcript to Flask API
+        fetch("http://127.0.0.1:5001/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ symptoms: transcript.split(" ") })
+        })
+        .then(res => {
+          if (!res.ok) throw new Error("Server returned " + res.status);
+          return res.json();
+        })
+        .then(data => {
+          console.log("✅ Backend response:", data);
+          if (data.error) {
+            responseDiv.innerHTML += "<br>❌ " + data.error;
+          } else {
+            responseDiv.innerHTML += `
+              <br>🩺 <strong>Disease:</strong> ${data.disease}
+              <br>📊 <strong>Confidence:</strong> ${data.confidence}
+              <br>💊 <strong>Medications:</strong> ${data.medications.join(", ")}
+            `;
+          }
+        })
+        .catch(err => {
+          console.error("❌ Fetch error:", err);
+          responseDiv.innerHTML += "<br>⚠️ Could not connect to server. Check if Flask is running.";
+        });
+      };
+
+      recognition.onerror = function(event) {
+        alert("🎤 Voice error: " + event.error);
+      };
+    }
+  </script>
+</body>
+</html>

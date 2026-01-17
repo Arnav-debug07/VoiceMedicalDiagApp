@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Voice Symptom Checker</title>
+  <style>
+    :root{
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --muted: #6b7280;
+      --accent: #4f46e5;
+      --accent-2: #06b6d4;
+      --success: #10b981;
+      --danger: #ef4444;
+      --glass: rgba(15,23,42,0.04);
+      --radius: 14px;
+      --shadow: 0 6px 18px rgba(15,23,42,0.08);
+      --small-shadow: 0 4px 10px rgba(15,23,42,0.06);
+      --mono: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    * { 
+      box-sizing: border-box; 
+      -webkit-font-smoothing:antialiased; 
+      -moz-osx-font-smoothing:grayscale; 
+    }
+
+    html,body{ 
+      height:100%; 
+      margin:0; 
+      font-family:var(--mono); 
+      background: linear-gradient(180deg, var(--bg), #eef2ff 60%); 
+      color:#0f172a; 
+    }
+
+    .card{
+      max-width:920px;
+      margin:26px auto;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), var(--card));
+      border-radius:var(--radius);
+      padding:22px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(15,23,42,0.04);
+      transition:transform .18s ease, box-shadow .18s ease;
+    }
+
+    @media (hover:hover) and (min-width:720px){
+      .card:hover{ 
+        transform: translateY(-6px); 
+        box-shadow: 0 14px 40px rgba(15,23,42,0.09); 
+      }
+    }
+
+    h1{
+      margin:0 0 8px 0;
+      font-size:20px;
+      letter-spacing: -0.2px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .card p{
+      margin:6px 0 18px 0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.45;
+    }
+
+    div > button{
+      -webkit-appearance:none;
+      appearance:none;
+      border:0;
+      font-weight:600;
+      font-size:15px;
+      padding:10px 16px;
+      border-radius:10px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      box-shadow: var(--small-shadow);
+      transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+    }
+
+    #startBtn{
+      background: linear-gradient(180deg, var(--accent), #3730a3);
+      color: #fff;
+    }
+
+    button.secondary, #stopBtn{
+      background: white;
+      color: #111827;
+      border: 1px solid rgba(15,23,42,0.06);
+    }
+
+    button:disabled{
+      opacity:0.6;
+      transform: none;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+
+    div > button:active{ 
+      transform: translateY(1px) scale(.998); 
+    }
+
+    div > button:focus{ 
+      outline: 3px solid rgba(79,70,229,0.14); 
+      outline-offset: 2px; 
+    }
+
+    h3{ 
+      font-size:13px; 
+      margin:18px 0 8px 0; 
+      color:#0f172a; 
+      opacity:0.9; 
+    }
+
+    #transcript, #assistant{
+      min-height:56px;
+      border-radius:10px;
+      padding:12px 14px;
+      background: linear-gradient(180deg, rgba(15,23,42,0.02), rgba(15,23,42,0.01));
+      border: 1px solid rgba(15,23,42,0.03);
+      color: #0b1220;
+      font-size:15px;
+      line-height:1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+    }
+
+    #assistant{
+      background: linear-gradient(180deg, rgba(6,182,212,0.02), rgba(79,70,229,0.02));
+      border-left: 4px solid rgba(79,70,229,0.12);
+      color:#061126;
+      font-weight:600;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      padding:12px;
+    }
+
+    input[type="text"], input[type="tel"] {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(15, 23, 42, 0.1);
+      font-size: 14px;
+      flex: 1;
+      transition: border-color 0.2s;
+      font-family: var(--mono);
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .small-muted {
+      font-size: 12px;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    #recommendation-block {
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.03), rgba(16, 185, 129, 0.01));
+      border-left: 4px solid rgba(16, 185, 129, 0.3);
+      padding: 14px;
+      border-radius: 10px;
+      margin-top: 12px;
+      line-height: 1.6;
+    }
+
+    #contact-section {
+      background: linear-gradient(180deg, #ffffff, #f0f9ff);
+      box-shadow: var(--small-shadow);
+      border: 1px solid rgba(79,70,229,0.1);
+      padding: 16px;
+      border-radius: 10px;
+      margin-top: 12px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 600px) {
+      .input-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎤 Voice Symptom Checker</h1>
+    <p class="small-muted">Click <strong>Start</strong> and speak slowly. Use Chrome on localhost/https for best results.</p>
+
+    <div class="controls">
+      <button id="startBtn">Start</button>
+      <button id="stopBtn" class="secondary" style="display:none">Stop</button>
+      <button id="testBtn" class="secondary">Run Self-test Log</button>
+    </div>
+
+    <div class="colwrap">
+      <div>
+        <h3>Transcript</h3>
+        <div id="transcript">No transcript yet.</div>
+      </div>
+
+      <div>
+        <h3>Assistant</h3>
+        <div id="assistant">No assistant output yet.</div>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div id="status" style="font-size:13px;color:var(--muted)">Status: idle</div>
+      <div id="err" style="color:var(--danger);font-size:13px;margin-top:6px"></div>
+    </div>
+  </div>
+
+<script>
+const API_BASE = 'http://127.0.0.1:5005';
+
+const startBtn = document.getElementById("startBtn");
+const stopBtn  = document.getElementById("stopBtn");
+const testBtn  = document.getElementById("testBtn");
+const transcriptDiv = document.getElementById("transcript");
+const assistantDiv  = document.getElementById("assistant");
+const statusDiv     = document.getElementById("status");
+const errDiv        = document.getElementById("err");
+
+function setStatus(s){ statusDiv.textContent = 'Status: ' + s; console.log('[STATUS]', s); }
+function setError(e){ errDiv.textContent = e ? String(e) : ''; if (e) console.error('[ERROR]', e); }
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+window.__lastPossible = null;
+
+/* ------------------ TTS Setup ------------------ */
+window.__tts = {
+  voice: null,
+  initialized: false,
+  preferredVoiceNames: ["Google UK English Female", "Google US English", "Microsoft Zira Desktop - English (United States)", "Samantha", "Karen"],
+  queuedUtterances: []
+};
+
+function chooseVoiceFromList(list) {
+  if (!list || !list.length) return null;
+  for (const pref of window.__tts.preferredVoiceNames) {
+    const found = list.find(v => v.name && v.name.toLowerCase().includes(pref.toLowerCase()));
+    if (found) return found;
+  }
+  const english = list.filter(v => v.lang && v.lang.toLowerCase().startsWith('en'));
+  if (english.length) {
+    const friendly = english.find(v => /female|samantha|zira|karen|google/i.test(v.name));
+    if (friendly) return friendly;
+    return english[0];
+  }
+  return list[0];
+}
+
+function initVoice() {
+  if (!('speechSynthesis' in window)) { console.warn('TTS not supported'); return; }
+  function onVoicesLoaded(voices) {
+    const v = chooseVoiceFromList(voices || []);
+    if (v) {
+      window.__tts.voice = v;
+      window.__tts.initialized = true;
+      console.info('TTS voice selected:', v.name, v.lang);
+      try {
+        const warm = new SpeechSynthesisUtterance(' ');
+        warm.voice = v;
+        warm.volume = 0;
+        window.speechSynthesis.speak(warm);
+        setTimeout(()=>{ try { window.speechSynthesis.cancel(); } catch(e){} }, 120);
+      } catch(e){}
+      if (window.__tts.queuedUtterances.length) {
+        const queued = window.__tts.queuedUtterances.splice(0);
+        queued.forEach(u => speak(u.text, u.opts));
+      }
+    }
+  }
+
+  const voices = window.speechSynthesis.getVoices();
+  if (voices && voices.length) onVoicesLoaded(voices);
+  window.speechSynthesis.onvoiceschanged = () => onVoicesLoaded(window.speechSynthesis.getVoices());
+  setTimeout(()=>{ if (!window.__tts.initialized) onVoicesLoaded(window.speechSynthesis.getVoices()); }, 400);
+}
+initVoice();
+
+function speak(text, opts = {}) {
+  if (!('speechSynthesis' in window) || !text) return;
+  if (!window.__tts.initialized) {
+    initVoice();
+    window.__tts.queuedUtterances.push({ text, opts });
+    setTimeout(() => {
+      if (!window.__tts.initialized) {
+        try {
+          window.speechSynthesis.cancel();
+          const ut = new SpeechSynthesisUtterance(text);
+          ut.rate = opts.rate ?? 0.95;
+          ut.pitch = opts.pitch ?? 1.02;
+          ut.lang = opts.lang || 'en-IN';
+          window.speechSynthesis.speak(ut);
+        } catch(e){ console.warn('speak fallback', e); }
+      }
+    }, 350);
+    return;
+  }
+  try { window.speechSynthesis.cancel(); } catch(e){}
+  const ut = new SpeechSynthesisUtterance(text);
+  if (window.__tts.voice) ut.voice = window.__tts.voice;
+  ut.rate = opts.rate ?? 0.95;
+  ut.pitch = opts.pitch ?? 1.02;
+  ut.volume = opts.volume ?? 1.0;
+  ut.lang = (window.__tts.voice && window.__tts.voice.lang) || opts.lang || 'en-IN';
+  window.speechSynthesis.speak(ut);
+}
+
+/* ------------------ Helpers ------------------ */
+function escapeHtml(unsafe) {
+  if (!unsafe && unsafe !== 0) return "";
+  return String(unsafe).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+}
+
+function createRecognizer() {
+  if (!SpeechRecognition) return null;
+  try {
+    const r = new SpeechRecognition();
+    r.lang = "en-IN";
+    r.interimResults = false;
+    r.maxAlternatives = 1;
+    r.continuous = false;
+    return r;
+  } catch (err) {
+    console.error('createRecognizer error', err);
+    return null;
+  }
+}
+
+function renderConfidenceBadge(confidence) {
+  let confValue = confidence;
+  if (confValue > 1) confValue = confValue / 100;
+  
+  let badgeColor, badgeText, badgeIcon;
+  if (confValue >= 0.8) {
+    badgeColor = '#10b981'; badgeText = 'High confidence'; badgeIcon = '✓';
+  } else if (confValue >= 0.6) {
+    badgeColor = '#f59e0b'; badgeText = 'Moderate confidence'; badgeIcon = '~';
+  } else if (confValue >= 0.3) {
+    badgeColor = '#ef4444'; badgeText = 'Low confidence'; badgeIcon = '!';
+  } else {
+    badgeColor = '#6b7280'; badgeText = 'Uncertain'; badgeIcon = '?';
+  }
+  
+  const percentage = Math.round(confValue * 100);
+  return `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:${badgeColor}15;border:1px solid ${badgeColor}40;font-size:13px;font-weight:600;color:${badgeColor};"><span style="font-size:14px;">${badgeIcon}</span>${badgeText} (${percentage}%)</span>`;
+}
+
+/* ------------------ Rendering ------------------ */
+function renderAskConfirmation(data) {
+  if (Array.isArray(data.possible_diseases) && data.possible_diseases.length) {
+    window.__lastPossible = data.possible_diseases;
+  } else {
+    const q = data.question || data.message || '';
+    const m = q.match(/\[(.*)\]/s);
+    if (m && m[1]) {
+      const items = m[1].split(/'\s*,\s*'|"\s*,\s*"/).map(s=>s.replace(/^['"\s]+|['"\s]+$/g,'').trim()).filter(Boolean);
+      window.__lastPossible = items.map(it => ({ disease: it, confirm_symptoms: [] }));
+    } else {
+      window.__lastPossible = null;
+    }
+  }
+
+  const heard = transcriptDiv.textContent ? `I heard: "${transcriptDiv.textContent.trim()}"` : '';
+  const headerHtml = `<div class="assistant-header"><div style="font-weight:700;color:#061126">Hi – thanks for sharing.</div><div class="small-muted">${escapeHtml(heard)}</div></div>`;
+
+  let candidatesHtml = '';
+  if (Array.isArray(data.possible_diseases) && data.possible_diseases.length) {
+    const cands = data.possible_diseases.map(pd => {
+      const disease = pd.disease || pd.name || 'Unknown';
+      const unique = pd.unique_symptom || pd.unique || '';
+      const confirm = Array.isArray(pd.confirm_symptoms) ? pd.confirm_symptoms : (pd.confirm_symptoms ? String(pd.confirm_symptoms).split(',').map(s=>s.trim()) : []);
+      const confirmHtml = confirm.length ? `<ul style="margin:6px 0 0 18px">${confirm.map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ul>` : `<div class="small-muted">No detail symptoms listed.</div>`;
+      return `<div class="candidate" style="margin-bottom:8px"><h4 style="margin:0 0 6px 0">${escapeHtml(disease)}${unique ? `<span style="font-size:13px;color:var(--muted)"> ${escapeHtml(unique)}</span>` : ''}</h4>${confirmHtml}</div>`;
+    }).join('');
+    candidatesHtml = `<div class="candidates">${cands}</div>`;
+  }
+
+  const promptText = (Array.isArray(data.possible_diseases) && data.possible_diseases.length) ? 'Please confirm whether any of the symptoms shown above apply to you.' : 'Please tell me whether any of the symptoms apply to you.';
+  const confirmHtml = `<div class="confirm-box" style="margin-top:12px"><div style="font-weight:600;color:#061126">${escapeHtml(promptText)}</div><div class="small-muted" style="margin-top:6px">Please say "yes" or "no", or list symptoms you DO have.</div></div>`;
+
+  assistantDiv.innerHTML = headerHtml + candidatesHtml + confirmHtml;
+  speak(`Thanks – I heard: ${transcriptDiv.textContent || 'your input'}. ${promptText}`, { rate:0.95, pitch:1.02 });
+  setTimeout(() => captureConfirmation(window.__lastPossible), 300);
+}
+
+async function renderFinalResult(j) {
+  const disease = j.disease || j.message || 'a condition';
+  const confPct = (typeof j.confidence !== 'undefined' && j.confidence !== null) ? Math.round(j.confidence * 100) : null;
+
+  const firstLine = `I think it might be ${disease}${confPct ? ` (${confPct}%)` : ''}.`;
+  const confidenceBadge = confPct ? renderConfidenceBadge(confPct / 100) : '';
+  const finalDiagnosisLine = `<div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;"><span style="font-weight:600;color:var(--muted)">Final diagnosis: ${escapeHtml(disease)}</span>${confidenceBadge}</div>`;
+
+  let html = `<div class="assistant-main">${escapeHtml(firstLine)}</div>`;
+  html += `<div id="recommendation-block" class="loading" style="margin-top:8px;color:var(--muted)">Loading personalized recommendations...</div>`;
+  html += finalDiagnosisLine;
+
+  assistantDiv.innerHTML = html;
+
+  const fullTranscript = transcriptDiv.textContent || "";
+  const tokens = fullTranscript.match(/\w+/g) || [];
+
+  console.log('🔍 Fetching recommendations for:', disease);
+
+  let recResp = null;
+  try {
+    const resp = await fetch(`${API_BASE}/recommend`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ disease: disease, tokens: tokens })
+    });
+    
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    recResp = await resp.json();
+    console.log('✅ Recommendation response:', recResp);
+    
+  } catch (err) {
+    console.error('❌ Recommendation error:', err);
+    recResp = { 
+      ok: false, 
+      advice_text: "Couldn't load recommendations. Please rest and consult a doctor.",
+      advice_html: `<div class='small-muted' style='padding:12px;'>Recommendations unavailable.</div>` 
+    };
+  }
+
+  const block = document.getElementById('recommendation-block');
+  block.classList.remove('loading');
+  let adviceText = '';
+  
+  if (recResp && recResp.ok) {
+    block.innerHTML = recResp.advice_html || escapeHtml(recResp.advice_text || '');
+    adviceText = recResp.advice_text_for_speech || recResp.advice_text || '';
+    
+    if (recResp.urgent) {
+      block.innerHTML = `<div style="padding:10px;background:#fef2f2;border-left:4px solid #ef4444;border-radius:8px;margin-bottom:10px;"><strong style="color:#dc2626;">⚠️ Seek immediate medical attention</strong></div>${block.innerHTML}`;
+      speak("This may require urgent medical attention. Please seek help immediately.", { rate: 0.90, pitch: 1.0 });
+      setTimeout(() => {
+        const diseasePhrase = `The diagnosis suggests ${disease}${confPct ? `, with ${confPct} percent confidence` : ''}.`;
+        if (adviceText && adviceText.trim()) {
+          chainSpeakWithContactPrompt(adviceText.trim(), diseasePhrase, disease, confPct);
+        }
+      }, 3000);
+      return;
+    }
+  } else {
+    block.innerHTML = recResp.advice_html || `<div class="small-muted">${escapeHtml(recResp.advice_text || 'No recommendations available.')}</div>`;
+    adviceText = recResp.advice_text || "Specific recommendations are unavailable. Please rest and consult a doctor.";
+  }
+
+  const diseasePhrase = `The diagnosis suggests ${disease}${confPct ? `, with ${confPct} percent confidence` : ''}.`;
+  if (adviceText && adviceText.trim()) {
+    chainSpeakWithContactPrompt(adviceText.trim(), diseasePhrase, disease, confPct);
+  } else {
+    speak(diseasePhrase, { rate: 0.98, pitch: 1.02 });
+    setTimeout(() => showContactSection(disease, confPct), 1500);
+  }
+}
+
+function chainSpeakWithContactPrompt(advice, diseasePhrase, disease, confPct) {
+  if (!('speechSynthesis' in window)) {
+    speak(advice);
+    setTimeout(() => {
+      speak(diseasePhrase);
+      setTimeout(() => showContactSection(disease, confPct), 1000);
+    }, 1000);
+    return;
+  }
+  
+  const voice = (window.__tts && window.__tts.voice) ? window.__tts.voice : null;
+  
+  const ut1 = new SpeechSynthesisUtterance(advice);
+  if (voice) ut1.voice = voice;
+  ut1.rate = 0.96;
+  ut1.pitch = 1.02;
+  ut1.lang = (voice && voice.lang) || 'en-IN';
+
+  ut1.onend = () => {
+    setTimeout(() => {
+      const ut2 = new SpeechSynthesisUtterance(diseasePhrase);
+      if (voice) ut2.voice = voice;
+      ut2.rate = 0.95;
+      ut2.pitch = 1.02;
+      ut2.lang = (voice && voice.lang) || 'en-IN';
+      
+      ut2.onend = () => {
+        setTimeout(() => {
+          showContactSection(disease, confPct);
+          const contactPrompt = "For a doctor callback and further diagnosis, please share your name and mobile number below.";
+          speak(contactPrompt, { rate: 0.94, pitch: 1.0 });
+        }, 300);
+      };
+      
+      try { window.speechSynthesis.cancel(); } catch(e) {}
+      window.speechSynthesis.speak(ut2);
+    }, 250);
+  };
+
+  ut1.onerror = (e) => {
+    console.error('TTS error:', e);
+    speak(diseasePhrase);
+    setTimeout(() => showContactSection(disease, confPct), 1000);
+  };
+
+  try {
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(ut1);
+  } catch (e) {
+    console.error('chainSpeakWithContactPrompt error:', e);
+    speak(advice);
+    setTimeout(() => {
+      speak(diseasePhrase);
+      setTimeout(() => showContactSection(disease, confPct), 1000);
+    }, 900);
+  }
+}
+
+function showContactSection(disease, confPct) {
+  if (document.getElementById('contact-section')) return;
+  
+  const block = document.getElementById('recommendation-block');
+  const contactHtml = `
+    <div id="contact-section">
+      <label style="display:block;font-weight:600;margin-bottom:8px;color:#061126;font-size:15px;">📋 Share your details for doctor callback</label>
+      <div class="small-muted" style="margin-bottom:12px;">A doctor will contact you for further diagnosis and treatment</div>
+      
+      <div style="margin-bottom:8px;">
+        <label style="display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px;">👤 Your Name</label>
+        <input id="name-input" type="text" placeholder="Enter your full name" style="width:100%;padding:11px 14px;border-radius:8px;border:1px solid rgba(79,70,229,0.2);font-size:15px;" />
+      </div>
+      
+      <div style="margin-bottom:12px;">
+        <label style="display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px;">📞 Phone Number</label>
+        <input id="phone-input" type="tel" placeholder="+91 98765 43210" style="width:100%;padding:11px 14px;border-radius:8px;border:1px solid rgba(79,70,229,0.2);font-size:15px;" />
+      </div>
+      
+      <button id="contact-save-btn" style="width:100%;padding:12px;background:linear-gradient(180deg, var(--accent), #3730a3);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(79,70,229,0.2);">📤 Submit & Request Callback</button>
+      
+      <div id="contact-msg" class="small-muted" style="margin-top:10px;color:var(--muted);">We'll only use your information to arrange a doctor callback</div>
+    </div>
+  `;
+  block.insertAdjacentHTML('afterend', contactHtml);
+
+  const nameInput = document.getElementById('name-input');
+  const phoneInput = document.getElementById('phone-input');
+  const contactBtn = document.getElementById('contact-save-btn');
+  const contactMsg = document.getElementById('contact-msg');
+
+  async function submitContact() {
+    const name = nameInput.value.trim();
+    const phone = phoneInput.value.trim();
+    
+    if (!name) {
+      contactMsg.style.color = 'var(--danger)';
+      contactMsg.textContent = '⚠️ Please enter your name';
+      speak("Please enter your name", { rate: 0.95 });
+      nameInput.focus();
+      return;
+    }
+    
+    const normalized = phone.replace(/[^\d+]/g, '');
+    const digits = normalized.replace(/[^\d]/g, '');
+    
+    if (!digits || digits.length < 10 || digits.length > 14) {
+      contactMsg.style.color = 'var(--danger)';
+      contactMsg.textContent = '⚠️ Please enter a valid mobile number (10-14 digits)';
+      speak("Please enter a valid mobile number", { rate: 0.95 });
+      phoneInput.focus();
+      return;
+    }
+    
+    contactMsg.style.color = 'var(--muted)';
+    contactMsg.textContent = '📤 Saving your details...';
+    nameInput.disabled = true;
+    phoneInput.disabled = true;
+    contactBtn.disabled = true;
+    
+    try {
+      console.log('💾 Submitting contact info:', { name, phone: normalized, disease, confidence: confPct });
+      
+      const resp = await fetch(`${API_BASE}/save_phone`, {
+        method: 'POST', 
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ 
+          name: name,
+          phone: normalized, 
+          disease: disease, 
+          confidence: confPct 
+        })
+      });
+      
+      let j = { ok: resp.ok };
+      try { j = await resp.json(); } catch(e) { console.warn('Parse error:', e); }
+      
+      if (resp.ok && j.ok) {
+        const masked = digits.length > 4 ? '***-***-' + digits.slice(-4) : '***-***';
+        contactMsg.style.color = 'var(--success)';
+        contactMsg.textContent = `✅ Thank you ${name}! We'll arrange a callback to ${masked}`;
+        speak(`Thank you ${name}. I have saved your details. A doctor will call you soon for further diagnosis.`, { rate: 0.96, pitch: 1.02 });
+        
+        const sec = document.getElementById('contact-section');
+        sec.innerHTML = `
+          <div style="padding:16px;background:linear-gradient(180deg, #f0fdf4, #dcfce7);border-radius:10px;border:1px solid rgba(16,185,129,0.2);">
+            <div style="font-weight:600;color:#065f46;display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <span>✅</span>
+              <span>Details Saved Successfully</span>
+            </div>
+            <div style="color:#059669;margin-bottom:4px;">👤 Name: ${escapeHtml(name)}</div>
+            <div style="color:#059669;margin-bottom:8px;">📞 Phone: ${escapeHtml(masked)}</div>
+            <div class="small-muted" style="color:#065f46;">A doctor will contact you soon for consultation and further diagnosis</div>
+          </div>
+        `;
+      } else {
+        contactMsg.style.color = 'var(--danger)';
+        contactMsg.textContent = j.message || '❌ Could not save details. Please try again.';
+        nameInput.disabled = false;
+        phoneInput.disabled = false;
+        contactBtn.disabled = false;
+      }
+    } catch (err) {
+      contactMsg.style.color = 'var(--danger)';
+      contactMsg.textContent = '❌ Network error. Please try again.';
+      console.error('Submit error:', err);
+      nameInput.disabled = false;
+      phoneInput.disabled = false;
+      contactBtn.disabled = false;
+    }
+  }
+
+  contactBtn.addEventListener('click', submitContact);
+  nameInput.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') phoneInput.focus(); });
+  phoneInput.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') submitContact(); });
+}
+
+/* ------------------ Prediction Flow ------------------ */
+startBtn.addEventListener("click", async () => {
+  setError('');
+  setStatus('starting...');
+  startBtn.disabled = true;
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    setError('No microphone API. Use latest Chrome on localhost/https.');
+    startBtn.disabled = false; setStatus('idle'); return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach(t=>t.stop());
+  } catch (e) {
+    setError('Microphone permission denied. Allow microphone access.');
+    startBtn.disabled = false; setStatus('idle'); return;
+  }
+
+  if (SpeechRecognition) {
+    const rec = createRecognizer();
+    if (!rec) { setError('SpeechRecognition initialization failed.'); startBtn.disabled = false; setStatus('idle'); return; }
+    rec.onstart = () => { setStatus('listening'); stopBtn.style.display='inline-block'; startBtn.style.display='none'; };
+    rec.onend = () => { setStatus('recognition ended'); stopBtn.style.display='none'; startBtn.style.display='inline-block'; startBtn.disabled=false; };
+    rec.onerror = (ev) => { setError('Recognition error: ' + (ev && ev.error ? ev.error : ev)); startBtn.disabled=false; setStatus('idle'); };
+    rec.onresult = (ev) => {
+      try {
+        const text = ev.results[0][0].transcript.trim();
+        transcriptDiv.textContent = text;
+        const tokens = text.match(/\w+/g) || [];
+        fetch(`${API_BASE}/predict`, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ symptoms: tokens }) })
+        .then(r => r.json())
+        .then(handlePredictResponse)
+        .catch(e => { setError("Predict error: " + e); });
+      } catch (ex) { setError('Result processing error: ' + ex); }
+    };
+    try { rec.start(); } catch(e) { setError("Could not start recognition: " + e); startBtn.disabled=false; setStatus('idle'); }
+  } else {
+    setError('SpeechRecognition API not available. Use Chrome desktop.');
+    startBtn.disabled = false; setStatus('idle');
+  }
+});
+
+stopBtn.addEventListener("click", () => {
+  setStatus('stopping...');
+  stopBtn.style.display='none';
+  startBtn.style.display='inline-block';
+});
+
+async function handlePredictResponse(data) {
+  console.log('handlePredictResponse', data);
+  
+  if (data.stage === 'no_match') {
+    const noMatchHtml = `
+      <div class="assistant-main" style="padding:16px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span style="font-size:24px;">🤔</span>
+          <span style="font-weight:600;color:#0f172a;">I couldn't identify your condition</span>
+        </div>
+        <div style="margin:12px 0;color:#475569;line-height:1.6;">
+          Based on what you described, I couldn't find a matching condition. This might be because:
+          <ul style="margin:8px 0;padding-left:20px;">
+            <li>The symptoms are too general or uncommon</li>
+            <li>I didn't hear your symptoms clearly</li>
+            <li>You need a more detailed examination</li>
+          </ul>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+          <button id="retry-btn" style="padding:10px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">🔄 Try Again</button>
+          <button id="manual-input-btn" style="padding:10px 16px;background:white;color:#0f172a;border:1px solid rgba(15,23,42,0.1);border-radius:8px;font-weight:600;cursor:pointer;">⌨️ Type Symptoms</button>
+        </div>
+        <div id="manual-input-area" style="display:none;margin-top:16px;">
+          <label style="display:block;margin-bottom:8px;font-weight:600;">Type your symptoms (separate with commas):</label>
+          <textarea id="manual-symptoms" placeholder="e.g., fever, cough, headache, fatigue" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(15,23,42,0.1);min-height:80px;font-size:14px;font-family:inherit;resize:vertical;"></textarea>
+          <button id="submit-manual-btn" style="margin-top:8px;padding:10px 16px;background:var(--accent);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Submit Symptoms</button>
+        </div>
+        <div style="margin-top:16px;padding:12px;background:#fef2f2;border-left:4px solid #ef4444;border-radius:8px;">
+          <strong style="color:#dc2626;">⚠️ Important:</strong>
+          <div style="color:#475569;margin-top:6px;">If you have severe symptoms like chest pain, difficulty breathing, or severe bleeding, please seek emergency medical care immediately.</div>
+        </div>
+      </div>
+    `;
+    
+    assistantDiv.innerHTML = noMatchHtml;
+    speak("I couldn't identify your condition from what you said. Would you like to try again or type your symptoms?");
+    
+    document.getElementById('retry-btn').addEventListener('click', () => {
+      transcriptDiv.textContent = 'Ready to try again...';
+      assistantDiv.textContent = 'Click Start and describe your symptoms clearly.';
+      speak("Okay, let's try again. Click Start and tell me your symptoms clearly.");
+      startBtn.disabled = false;
+    });
+    
+    document.getElementById('manual-input-btn').addEventListener('click', () => {
+      document.getElementById('manual-input-area').style.display = 'block';
+      document.getElementById('manual-symptoms').focus();
+    });
+    
+    document.getElementById('submit-manual-btn').addEventListener('click', async () => {
+      const manualText = document.getElementById('manual-symptoms').value.trim();
+      if (!manualText) {
+        speak("Please type your symptoms first.");
+        return;
+      }
+      
+      transcriptDiv.textContent = manualText;
+      assistantDiv.textContent = 'Processing your symptoms...';
+      
+      const tokens = manualText.match(/\w+/g) || [];
+      try {
+        const resp = await fetch(`${API_BASE}/predict`, {
+          method: "POST", headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ symptoms: tokens })
+        });
+        const data = await resp.json();
+        handlePredictResponse(data);
+      } catch (e) {
+        setError("Failed to process symptoms: " + e);
+      }
+    });
+    return;
+  }
+  
+  if (data.stage === 'ask_confirmation') {
+    renderAskConfirmation(data);
+  } else if (data.stage === 'final_result') {
+    renderFinalResult(data);
+  } else {
+    assistantDiv.textContent = data.message || JSON.stringify(data);
+  }
+}
+
+function captureConfirmation(possibleCandidates) {
+  setStatus('listening for confirmation reply...');
+  const rec = createRecognizer();
+  if (!rec) { setError('No SpeechRecognition for confirmation'); setStatus('idle'); return; }
+
+  rec.onresult = async (ev) => {
+    const reply = ev.results[0][0].transcript.trim().toLowerCase();
+    transcriptDiv.textContent += "\n\n(confirmation) " + reply;
+    setStatus('sending confirmation to server...');
+    try {
+      const payloadCandidates = window.__lastPossible || possibleCandidates || null;
+      const resp = await fetch(`${API_BASE}/confirm`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ reply: reply, possible_diseases: payloadCandidates })
+      });
+      const j = await resp.json();
+      if (j.stage === 'final_result') {
+        renderFinalResult(j);
+      } else {
+        assistantDiv.textContent = j.message || JSON.stringify(j);
+      }
+    } catch (e) {
+      setError('Confirm error: ' + e);
+    } finally {
+      setStatus('idle');
+    }
+  };
+  rec.onerror = (ev) => { setError('Confirmation error: ' + (ev && ev.error ? ev.error : ev)); setStatus('idle'); };
+  try { rec.start(); } catch(e) { setError('Could not start confirmation: ' + e); setStatus('idle'); }
+}
+
+testBtn.addEventListener('click', () => {
+  const sample = {
+    possible_diseases: [
+      {"confirm_symptoms":["Sneezing","Congestion","Sore-throat","Cough"],"disease":"Common Cold (Upper Respiratory Tract Infection)","unique_symptom":"Runny-nose"},
+      {"confirm_symptoms":["Fever","Fatigue","Headache","Chills"],"disease":"Influenza (Flu)","unique_symptom":"Body-ache"}
+    ],
+    question: "Please tell me if you have any of these symptoms: ['Sneezing, Congestion, Sore-throat, Cough', 'Fever, Fatigue, Headache, Chills']",
+    stage: 'ask_confirmation'
+  };
+  transcriptDiv.textContent = 'I have a fever and cough';
+  handlePredictResponse(sample);
+});
+
+window.addEventListener('load', async () => {
+  console.log('🔍 Testing backend connection...');
+  try {
+    const testResp = await fetch(`${API_BASE}/_test_json_load`);
+    const testData = await testResp.json();
+    console.log('✅ Backend connected:', testData);
+    if (!testData.json_loaded) {
+      console.warn('⚠️ WARNING: recommendations.json not loaded!');
+    } else {
+      console.log(`✅ ${testData.num_diseases} diseases loaded from JSON`);
+    }
+  } catch (err) {
+    console.error('❌ Cannot connect to backend:', err);
+  }
+});
+
+</script>
+</body>
+</html>

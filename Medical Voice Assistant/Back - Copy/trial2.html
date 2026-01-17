@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Symptom Checker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #app {
+      background: #fff;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 400px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background: #007bff;
+      color: white;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    #output, #response {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    #output {
+      background: #f1f1f1;
+    }
+    #response {
+      background: #e9ffe9;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h2>🎤 Voice Symptom Checker</h2>
+    <button onclick="startRecognition()">Start Talking</button>
+    <p id="output">🗣 Say your symptoms here...</p>
+    <p id="response"></p>
+  </div>
+
+  <script>
+    async function startRecognition() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "en-US";
+      recognition.start();
+
+      recognition.onresult = async function(event) {
+        let speechResult = event.results[0][0].transcript;
+        document.getElementById("output").innerHTML = "🗣 You said: " + speechResult;
+
+        try {
+          let response = await fetch("http://127.0.0.1:5001/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ symptoms: speechResult.toLowerCase().split(" ") })
+          });
+
+          let data = await response.json();
+
+          if (data.error) {
+            document.getElementById("response").innerHTML = "⚠️ " + data.error;
+          } else {
+            document.getElementById("response").innerHTML = `
+              🧾 <b>Disease:</b> ${data.disease} <br>
+              ✅ <b>Confidence:</b> ${data.confidence} <br>
+              💊 <b>Medications:</b> ${data.medications.join(", ")}
+            `;
+          }
+        } catch (err) {
+          document.getElementById("response").innerHTML = "❌ Error connecting to server.";
+          console.error(err);
+        }
+      };
+
+      recognition.onerror = function(event) {
+        document.getElementById("response").innerHTML = "❌ Speech recognition error: " + event.error;
+      };
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+Timestamp,Phone,Disease,Confidence,Status
+2025-10-29 04:36:46,9265837209,COVID-19,70,Pending
+2025-10-29 04:51:12,298283878238,Gallstones / Gallbladder Disease,60,Pending
+2025-10-29 08:40:42,8462684826,Common Cold (Upper Respiratory Tract Infection),70,Pending
+2025-10-29 09:04:20,8272835417,Common Cold (Upper Respiratory Tract Infection),70,Pending
+2025-10-29 09:08:46,6285628471,Common Cold (Upper Respiratory Tract Infection),70,Pending
+2025-10-29 09:15:29,9757895792,Common Cold (Upper Respiratory Tract Infection),70,Pending
+2025-10-29 09:19:48,3468833579,Common Cold (Upper Respiratory Tract Infection),70,Pending
+2025-10-29 09:38:50,7965858063,Common Cold (Upper Respiratory Tract Infection),70,Pending
+2025-10-29 09:43:49,2846808465,Common Cold (Upper Respiratory Tract Infection),70,Pending
+2025-10-29 09:54:57,6576492649,Common Cold (Upper Respiratory Tract Infection),70,Pending
+2025-10-29 11:48:42,Abc`,8565385987,Influenza (Flu),70,Pending
+2025-10-29 12:02:41,ABC,7495829555,Common Cold (Upper Respiratory Tract Infection),70,Pending
+2025-10-29 12:15:36,ABC,7867547583,COVID-19,70,Pending
+2025-10-29 13:09:08,ABC,73838658364,Common Cold (Upper Respiratory Tract Infection),70,Pending
+2025-10-31 14:24:28,A,53485468455,Bronchitis (acute & chronic),70,Pending
+2025-10-31 14:44:38,A,4674885875,Common Cold (Upper Respiratory Tract Infection),30,Pending

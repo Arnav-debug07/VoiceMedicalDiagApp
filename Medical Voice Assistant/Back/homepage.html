@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Medical Assistant - Home</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #3730a3;
+      --secondary: #06b6d4;
+      --success: #10b981;
+      --text-dark: #1e293b;
+      --text-muted: #64748b;
+      --bg-light: #f8fafc;
+      --shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+      color: white;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .logo-icon {
+      font-size: 64px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .header h1 {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .tagline {
+      font-size: 20px;
+      opacity: 0.95;
+      font-weight: 500;
+    }
+
+    .main-content {
+      margin-bottom: 40px;
+    }
+
+    .welcome-text {
+      text-align: center;
+      color: white;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 40px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .portal-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 32px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .portal-card {
+      background: white;
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .portal-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      transition: height 0.3s ease;
+    }
+
+    .patient-card::before {
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+
+    .doctor-card::before {
+      background: linear-gradient(90deg, var(--success), var(--secondary));
+    }
+
+    .portal-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    .portal-card:hover::before {
+      height: 8px;
+    }
+
+    .card-icon {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 24px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease;
+    }
+
+    .patient-icon {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(6, 182, 212, 0.1));
+      color: var(--primary);
+    }
+
+    .doctor-icon {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
+      color: var(--success);
+    }
+
+    .portal-card:hover .card-icon {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    .card-title {
+      font-size: 32px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 16px;
+      color: var(--text-dark);
+    }
+
+    .card-description {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .card-features {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-dark);
+      font-size: 15px;
+      padding: 12px;
+      background: var(--bg-light);
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    .portal-button {
+      width: 100%;
+      padding: 16px 32px;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .patient-button {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+    }
+
+    .patient-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+    }
+
+    .doctor-button {
+      background: linear-gradient(135deg, var(--success), #059669);
+      color: white;
+    }
+
+    .doctor-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .footer {
+      text-align: center;
+      color: white;
+      margin-top: 60px;
+    }
+
+    .footer p {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-bottom: 16px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      opacity: 0.8;
+      transition: opacity 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+
+    @media (max-width: 900px) {
+      .portal-cards {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+      }
+
+      .header h1 {
+        font-size: 36px;
+      }
+
+      .welcome-text {
+        font-size: 20px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .header h1 {
+        font-size: 28px;
+      }
+
+      .card-title {
+        font-size: 24px;
+      }
+
+      .portal-card {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">🏥</span>
+      </div>
+      <h1>Medical Assistant</h1>
+      <p class="tagline">AI-Powered Healthcare Solutions</p>
+    </header>
+
+    <main class="main-content">
+      <h2 class="welcome-text">Welcome! Please select your portal</h2>
+      
+      <div class="portal-cards">
+        <!-- Patient Portal -->
+        <div class="portal-card patient-card" onclick="window.location.href='trial6.html'">
+          <div class="card-icon patient-icon">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <h3 class="card-title">Patient</h3>
+          <p class="card-description">
+            Get instant symptom analysis, AI-powered diagnosis, and personalized health recommendations
+          </p>
+          <div class="card-features">
+            <div class="feature-item">✓ Voice Symptom Checker</div>
+            <div class="feature-item">✓ AI Diagnosis</div>
+            <div class="feature-item">✓ Doctor Callback</div>
+          </div>
+          <button class="portal-button patient-button">
+            Enter Patient Portal →
+          </button>
+        </div>
+
+        <!-- Doctor Portal -->
+        <div class="portal-card doctor-card" onclick="window.location.href='doctor.html'">
+          <div class="card-icon doctor-icon">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+            </svg>
+          </div>
+          <h3 class="card-title">Doctor</h3>
+          <p class="card-description">
+            Access patient records, manage callbacks, and review AI-generated diagnoses
+          </p>
+          <div class="card-features">
+            <div class="feature-item">✓ Patient Dashboard</div>
+            <div class="feature-item">✓ Callback Queue</div>
+            <div class="feature-item">✓ Diagnosis Review</div>
+          </div>
+          <button class="portal-button doctor-button">
+            Enter Doctor Portal →
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>&copy; 2025 Medical Assistant. AI-powered healthcare for everyone.</p>
+      <div class="footer-links">
+        <a href="#privacy">Privacy Policy</a>
+        <a href="#terms">Terms of Service</a>
+        <a href="#contact">Contact Us</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Add hover effects
+    document.querySelectorAll('.portal-card').forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-12px) scale(1.02)';
+      });
+      
+      card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0) scale(1)';
+      });
+    });
+
+    // Log portal selection
+    document.querySelectorAll('.portal-card').forEach(card => {
+      card.addEventListener('click', function() {
+        const portalType = this.classList.contains('patient-card') ? 'Patient' : 'Doctor';
+        console.log(`${portalType} portal selected`);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Voice Symptom Checker</title>
+   <link rel="stylesheet" href="trial4.css">
+</head>
+<body>
+  <div class="card">
+    <h1>🎤 Voice Symptom Checker</h1>
+    <p>Click <strong>Start</strong> and speak slowly. Use Chrome on localhost/https for best results.</p>
+
+    <div>
+      <button id="startBtn">Start</button>
+      <button id="stopBtn" class="secondary" style="display:none">Stop</button>
+    </div>
+
+    <h3>Transcript</h3>
+    <div id="transcript">No transcript yet.</div>
+
+    <h3>Assistant</h3>
+    <div id="assistant">No assistant output yet.</div>
+
+    <div style="margin-top:12px;color:#6b7280;font-size:14px;">
+      <div id="status">Status: idle</div>
+      <div id="err" class="warn"></div>
+    </div>
+  </div>
+
+<script>
+const startBtn = document.getElementById("startBtn");
+const stopBtn = document.getElementById("stopBtn");
+const transcriptDiv = document.getElementById("transcript");
+const assistantDiv = document.getElementById("assistant");
+const statusDiv = document.getElementById("status");
+const errDiv = document.getElementById("err");
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+let recorder = null;
+let recordedChunks = [];
+
+function setStatus(s){ statusDiv.textContent = 'Status: ' + s; }
+function setError(e){ errDiv.textContent = e ? String(e) : ''; }
+
+// Create new recognizer each time (fresh state)
+function createRecognizer() {
+  if (!SpeechRecognition) return null;
+  const r = new SpeechRecognition();
+  r.lang = "en-IN";
+  r.interimResults = false;
+  r.maxAlternatives = 1;
+  r.continuous = false;
+  return r;
+}
+
+// Ensure microphone permission (prompts if needed)
+async function ensureMicPermission() {
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: true });
+    return true;
+  } catch (e) {
+    setError("Microphone permission denied or unavailable.");
+    return false;
+  }
+}
+
+startBtn.addEventListener("click", async () => {
+  setError('');
+  setStatus('starting...');
+  startBtn.disabled = true;
+
+  if (SpeechRecognition) {
+    const ok = await ensureMicPermission();
+    if (!ok) { startBtn.disabled = false; setStatus('idle'); return; }
+
+    const rec = createRecognizer();
+    rec.onstart = () => { setStatus('listening'); stopBtn.style.display='inline-block'; startBtn.style.display='none'; };
+    rec.onend = () => { setStatus('recognition ended'); stopBtn.style.display='none'; startBtn.style.display='inline-block'; startBtn.disabled=false; };
+    rec.onerror = (ev) => { setError('Recognition error: ' + ev.error); startBtn.disabled=false; setStatus('idle'); };
+    rec.onresult = (ev) => {
+      const text = ev.results[0][0].transcript.trim();
+      transcriptDiv.textContent = text;
+      // convert to token list exactly as you requested
+      const tokens = text.match(/\w+/g) || [];
+      // send as list to backend
+      fetch("http://127.0.0.1:5005/predict", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ symptoms: tokens })
+      })
+      .then(r => r.json())
+      .then(handlePredictResponse)
+      .catch(e => { setError("Predict error: " + e); });
+    };
+    try { rec.start(); } catch(e) { setError("Could not start recognition: " + e); startBtn.disabled=false; }
+  } else {
+    // Fallback: record and upload to /transcribe (if server supports it)
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setError("No microphone API available.");
+      startBtn.disabled=false;
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recordedChunks = [];
+      recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = e => { if (e.data.size>0) recordedChunks.push(e.data); };
+      recorder.onstop = async () => {
+        setStatus('uploading audio for transcription...');
+        const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+        const fd = new FormData();
+        fd.append('file', blob, 'speech.webm');
+        try {
+          const resp = await fetch('http://127.0.0.1:5005/transcribe', { method: 'POST', body: fd });
+          const j = await resp.json();
+          if (j.transcription) {
+            transcriptDiv.textContent = j.transcription;
+            const tokens = j.transcription.match(/\w+/g) || [];
+            const res2 = await fetch("http://127.0.0.1:5005/predict", {
+              method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ symptoms: tokens })
+            });
+            handlePredictResponse(await res2.json());
+          } else {
+            setError("Transcription failed: " + JSON.stringify(j));
+          }
+        } catch(err) { setError("Transcription/upload error: " + err); }
+      };
+      recorder.start();
+      setStatus('recording, press Stop when done');
+      stopBtn.style.display = 'inline-block';
+      startBtn.style.display = 'none';
+    } catch (err) {
+      setError('Microphone error: ' + err);
+      startBtn.disabled=false;
+    }
+  }
+});
+
+stopBtn.addEventListener("click", () => {
+  setStatus('stopping...');
+  // stop MediaRecorder if active
+  if (recorder && recorder.state !== 'inactive') {
+    recorder.stop();
+  }
+  // SpeechRecognition onend will be called automatically when user stops speaking
+  stopBtn.style.display='none';
+  startBtn.style.display='inline-block';
+});
+
+async function handlePredictResponse(data) {
+  console.log("Predict:", data);
+  if (data.stage === "ask_confirmation") {
+    assistantDiv.textContent = data.question || "Do you have these symptoms?";
+    // capture one follow up reply automatically
+    setTimeout(() => captureConfirmation(data.possible_diseases), 300);
+  } else {
+    assistantDiv.textContent = data.message || JSON.stringify(data);
+  }
+}
+
+function captureConfirmation(possibleDiseases) {
+  setStatus('listening for confirmation reply...');
+  const rec = createRecognizer();
+  if (!rec) { setError('No SpeechRecognition available for confirmation'); return; }
+  rec.onresult = async (ev) => {
+    const reply = ev.results[0][0].transcript.trim().toLowerCase();
+    transcriptDiv.textContent += "\n\n(confirmation) " + reply;
+    setStatus('sending confirmation to server...');
+    try {
+      const resp = await fetch('http://127.0.0.1:5005/confirm', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ reply: reply, possible_diseases: possibleDiseases })
+      });
+      const j = await resp.json();
+      if (j.stage === "final_result") {
+        assistantDiv.textContent = `Final: ${j.disease}\nConfidence: ${j.confidence}`;
+        // speak the assistant's response if available
+        if ('speechSynthesis' in window) {
+          const utter = new SpeechSynthesisUtterance(assistantDiv.textContent);
+          window.speechSynthesis.cancel();
+          window.speechSynthesis.speak(utter);
+        }
+      } else {
+        assistantDiv.textContent = JSON.stringify(j);
+      }
+    } catch (e) {
+      setError('Confirm error: ' + e);
+    } finally {
+      setStatus('idle');
+    }
+  };
+  rec.onerror = (ev) => { setError('Confirmation recognition error: ' + ev.error); setStatus('idle'); };
+  try { rec.start(); } catch(e) { setError('Could not start confirmation recognition: ' + e); setStatus('idle'); }
+}
+</script>
+</body>
+</html>

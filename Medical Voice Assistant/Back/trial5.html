@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Voice Symptom Checker</title>
+  <link rel="stylesheet" href="trial5.css">
+  
+</head>
+<body>
+  <div class="card">
+    <h1>🎤 Voice Symptom Checker</h1>
+    <p class="small-muted">Click <strong>Start</strong> and speak slowly. Use Chrome on localhost/https for best results.</p>
+
+    <div class="controls">
+      <button id="startBtn">Start</button>
+      <button id="stopBtn" class="secondary" style="display:none">Stop</button>
+      <button id="testBtn" class="secondary">Run Self-test Log</button>
+    </div>
+
+    <div class="colwrap">
+      <div>
+        <h3>Transcript</h3>
+        <div id="transcript">No transcript yet.</div>
+      </div>
+
+      <div>
+        <h3>Assistant</h3>
+        <div id="assistant">No assistant output yet.</div>
+      </div>
+    </div>
+
+    <div class="meta">
+      <div id="status">Status: idle</div>
+      <div id="err" class="warn"></div>
+    </div>
+  </div>
+
+<script>
+/* =======================
+   Main front-end script
+   - speech recognition for predict + confirm
+   - TTS initialization & stable speak()
+   - /recommend integration and phone UI
+   - CHANGED: chainSpeak used to speak advice then disease
+   ======================= */
+
+const startBtn = document.getElementById("startBtn");
+const stopBtn  = document.getElementById("stopBtn");
+const testBtn  = document.getElementById("testBtn");
+const transcriptDiv = document.getElementById("transcript");
+const assistantDiv  = document.getElementById("assistant");
+const statusDiv     = document.getElementById("status");
+const errDiv        = document.getElementById("err");
+
+function setStatus(s){ statusDiv.textContent = 'Status: ' + s; console.log('[STATUS]', s); }
+function setError(e){ errDiv.textContent = e ? String(e) : ''; if (e) console.error('[ERROR]', e); }
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+let recorder = null;
+let recordedChunks = [];
+
+// preserve last raw possible list for confirm flow
+window.__lastPossible = null;
+
+/* ------------------ TTS: stable voice selection & speak helper ------------------ */
+window.__tts = {
+  voice: null,
+  initialized: false,
+  preferredVoiceNames: [
+    "Google UK English Female",
+    "Google US English",
+    "Microsoft Zira Desktop - English (United States)",
+    "Samantha",
+    "Karen"
+  ],
+  queuedUtterances: []
+};
+
+function chooseVoiceFromList(list) {
+  if (!list || !list.length) return null;
+  for (const pref of window.__tts.preferredVoiceNames) {
+    const found = list.find(v => v.name && v.name.toLowerCase().includes(pref.toLowerCase()));
+    if (found) return found;
+  }
+  const english = list.filter(v => v.lang && v.lang.toLowerCase().startsWith('en'));
+  if (english.length) {
+    const friendly = english.find(v => /female|samantha|zira|karen|google/i.test(v.name));
+    if (friendly) return friendly;
+    return english[0];
+  }
+  return list[0];
+}
+
+function initVoice() {
+  if (!('speechSynthesis' in window)) { console.warn('TTS not supported'); return; }
+  function onVoicesLoaded(voices) {
+    const v = chooseVoiceFromList(voices || []);
+    if (v) {
+      window.__tts.voice = v;
+      window.__tts.initialized = true;
+      console.info('TTS voice selected:', v.name, v.lang);
+      // pre-warm with silent utterance
+      try {
+        const warm = new SpeechSynthesisUtterance(' ');
+        warm.voice = v;
+        warm.volume = 0;
+        window.speechSynthesis.speak(warm);
+        setTimeout(()=>{ try { window.speechSynthesis.cancel(); } catch(e){} }, 120);
+      } catch(e){}
+      // flush queued
+      if (window.__tts.queuedUtterances.length) {
+        const queued = window.__tts.queuedUtterances.splice(0);
+        queued.forEach(u => speak(u.text, u.opts));
+      }
+    } else {
+      console.warn('No voice chosen; voices:', voices);
+    }
+  }
+
+  const voices = window.speechSynthesis.getVoices();
+  if (voices && voices.length) onVoicesLoaded(voices);
+  window.speechSynthesis.onvoiceschanged = () => onVoicesLoaded(window.speechSynthesis.getVoices());
+  // fallback attempt
+  setTimeout(()=>{ if (!window.__tts.initialized) onVoicesLoaded(window.speechSynthesis.getVoices()); }, 400);
+}
+initVoice();
+
+function speak(text, opts = {}) {
+  if (!('speechSynthesis' in window) || !text) return;
+  if (!window.__tts.initialized) {
+    // queue and attempt initialization
+    initVoice();
+    window.__tts.queuedUtterances.push({ text, opts });
+    // fallback short delay: if still uninitialized, speak with default
+    setTimeout(() => {
+      if (!window.__tts.initialized) {
+        try {
+          window.speechSynthesis.cancel();
+          const ut = new SpeechSynthesisUtterance(text);
+          ut.rate = opts.rate ?? 0.95;
+          ut.pitch = opts.pitch ?? 1.02;
+          ut.lang = opts.lang || 'en-IN';
+          window.speechSynthesis.speak(ut);
+        } catch(e){ console.warn('speak fallback', e); }
+      }
+    }, 350);
+    return;
+  }
+  try { window.speechSynthesis.cancel(); } catch(e){}
+  const ut = new SpeechSynthesisUtterance(text);
+  if (window.__tts.voice) ut.voice = window.__tts.voice;
+  ut.rate = opts.rate ?? 0.95;
+  ut.pitch = opts.pitch ?? 1.02;
+  ut.volume = opts.volume ?? 1.0;
+  ut.lang = (window.__tts.voice && window.__tts.voice.lang) || opts.lang || 'en-IN';
+  window.speechSynthesis.speak(ut);
+}
+
+/* ------------------ helpers ------------------ */
+function escapeHtml(unsafe) {
+  if (!unsafe && unsafe !== 0) return "";
+  return String(unsafe).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+}
+
+function createRecognizer() {
+  if (!SpeechRecognition) return null;
+  try {
+    const r = new SpeechRecognition();
+    r.lang = "en-IN";
+    r.interimResults = false;
+    r.maxAlternatives = 1;
+    r.continuous = false;
+    return r;
+  } catch (err) {
+    console.error('createRecognizer error', err);
+    return null;
+  }
+}
+
+/* ------------------ Rendering flows ------------------ */
+
+// Render ask_confirmation (keeps previous behavior, friendly prompt, then captureConfirmation)
+function renderAskConfirmation(data) {
+  if (Array.isArray(data.possible_diseases) && data.possible_diseases.length) {
+    window.__lastPossible = data.possible_diseases;
+  } else {
+    const q = data.question || data.message || '';
+    const m = q.match(/\[(.*)\]/s);
+    if (m && m[1]) {
+      const items = m[1].split(/'\s*,\s*'|"\s*,\s*"/).map(s=>s.replace(/^['"\s]+|['"\s]+$/g,'').trim()).filter(Boolean);
+      window.__lastPossible = items.map(it => ({ disease: it, confirm_symptoms: [] }));
+    } else {
+      window.__lastPossible = null;
+    }
+  }
+
+  const heard = transcriptDiv.textContent ? `I heard: "${transcriptDiv.textContent.trim()}"` : '';
+  const headerHtml = `<div class="assistant-header"><div style="font-weight:700;color:#061126">Hi — thanks for sharing.</div><div class="small-muted">${escapeHtml(heard)}</div></div>`;
+
+  // Build candidates grid (if any)
+  let candidatesHtml = '';
+  if (Array.isArray(data.possible_diseases) && data.possible_diseases.length) {
+    const cands = data.possible_diseases.map(pd => {
+      const disease = pd.disease || pd.name || 'Unknown';
+      const unique = pd.unique_symptom || pd.unique || '';
+      const confirm = Array.isArray(pd.confirm_symptoms) ? pd.confirm_symptoms : (pd.confirm_symptoms ? String(pd.confirm_symptoms).split(',').map(s=>s.trim()) : []);
+      const confirmHtml = confirm.length ? `<ul>${confirm.map(s=>`<li>${escapeHtml(s)}</li>`).join('')}</ul>` : `<div class="small-muted">No detail symptoms listed.</div>`;
+      return `<div class="candidate" style="margin-bottom:8px"><h4 style="margin:0 0 6px 0">${escapeHtml(disease)}${unique ? `<span style="font-size:13px;color:var(--muted)"> ${escapeHtml(unique)}</span>` : ''}</h4>${confirmHtml}</div>`;
+    }).join('');
+    candidatesHtml = `<div class="candidates">${cands}</div>`;
+  } else {
+    candidatesHtml = `<div class="small-muted">I couldn't parse suggested diagnoses. Please confirm your symptoms.</div>`;
+  }
+
+  const promptText = (Array.isArray(data.possible_diseases) && data.possible_diseases.length) ? 'Please confirm whether any of the symptoms shown above apply to you.' : 'Please tell me whether any of the symptoms apply to you.';
+  const confirmHtml = `<div class="confirm-box"><div style="font-weight:600;color:#061126">${escapeHtml(promptText)}</div><div class="small-muted" style="margin-top:6px">Please say "yes" or "no", or list symptoms you DO have.</div></div>`;
+
+  assistantDiv.innerHTML = headerHtml + candidatesHtml + confirmHtml;
+  assistantDiv.classList.add('updated');
+
+  // speak friendly prompt as single utterance
+  speak(`Thanks — I heard: ${transcriptDiv.textContent || 'your input'}. ${promptText}`, { rate:0.95, pitch:1.02 });
+
+  setTimeout(() => captureConfirmation(window.__lastPossible), 300);
+}
+
+/* renderFinalResult: show diagnosis, ask recommend endpoint, show recommendation and phone UI; speak advice then disease */
+async function renderFinalResult(j) {
+  const disease = j.disease || j.message || 'a condition';
+  const confPct = (typeof j.confidence !== 'undefined' && j.confidence !== null) ? Math.round(j.confidence * 100) : null;
+
+  const firstLine = `I think it might be ${disease}${confPct ? ` (${confPct}%)` : ''}.`;
+  const finalDiagnosisLine = `Final diagnosis: ${disease}${confPct ? ` · Confidence: ${confPct}%` : ''}`;
+
+  // basic visible layout while recommendation loads
+  let html = `<div class="assistant-main">${escapeHtml(firstLine)}</div>`;
+  html += `<div id="recommendation-block" style="margin-top:8px;color:var(--muted)">Loading recommendation...</div>`;
+  html += `<div style="margin-top:10px;font-weight:600;color:var(--muted)">${escapeHtml(finalDiagnosisLine)}</div>`;
+
+  assistantDiv.innerHTML = html;
+  assistantDiv.classList.add('updated');
+
+  // prepare tokens from transcript for better matching
+  const tokens = (transcriptDiv.textContent || "").match(/\w+/g) || [];
+
+  // call backend /recommend (expects JSON { disease, tokens })
+  let recResp = null;
+  try {
+    const resp = await fetch('/recommend', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ disease: disease, tokens: tokens })
+    });
+    recResp = await resp.json();
+  } catch (err) {
+    console.warn('Recommendation fetch failed', err);
+    recResp = { ok:false, advice_text: "I couldn't load specific recommendations right now. Rest, hydrate, and consult a doctor if you feel worse.", advice_html: "<div>I couldn't load specific recommendations right now. Rest, hydrate, and consult a doctor if you feel worse.</div>" };
+  }
+
+  const block = document.getElementById('recommendation-block');
+  let adviceText = '';
+  if (recResp && recResp.ok) {
+    block.innerHTML = recResp.advice_html || escapeHtml(recResp.advice_text || '');
+    adviceText = recResp.advice_text || '';
+  } else {
+    block.innerHTML = recResp.advice_html || `<div class="small-muted">${escapeHtml(recResp.advice_text || 'No recommendations available.')}</div>`;
+    adviceText = recResp.advice_text || "I'm sorry, recommendations are currently unavailable. Please consult a doctor if your condition worsens.";
+  }
+
+  // NEW: speak advice, then disease phrase using chainSpeak()
+  const diseasePhrase = `It may be ${disease}${confPct ? `, confidence ${confPct} percent` : ''}.`;
+  if (adviceText && adviceText.trim()) {
+    chainSpeak(adviceText.trim(), diseasePhrase);
+  } else {
+    // fallback: speak disease phrase alone
+    speak(diseasePhrase, { rate:0.98, pitch:1.02 });
+  }
+
+  // Add persistent phone UI under recommendation (user can choose to provide)
+  if (!document.getElementById('phone-section')) {
+    const phoneHtml = `
+      <div id="phone-section" style="margin-top:12px;padding:12px;border-radius:10px;background:#fff;border:1px solid rgba(15,23,42,0.03);">
+        <label for="phone-input" style="display:block;font-weight:600;margin-bottom:8px;color:#061126">Share your mobile number for a doctor callback (optional)</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="phone-input" type="tel" placeholder="+91 98765 43210" />
+          <button id="phone-save-btn">Send</button>
+        </div>
+        <div id="phone-msg" class="small-muted" style="margin-top:8px">We will only use your number to arrange a callback.</div>
+      </div>
+    `;
+    block.insertAdjacentHTML('afterend', phoneHtml);
+
+    const phoneInput = document.getElementById('phone-input');
+    const phoneBtn   = document.getElementById('phone-save-btn');
+    const phoneMsg   = document.getElementById('phone-msg');
+
+    function normalizePhone(p) {
+      if (!p) return '';
+      const cleaned = String(p).replace(/[^\d+]/g, '');
+      return cleaned;
+    }
+    function isProbablyPhone(p) {
+      if (!p) return false;
+      const s = p.replace(/[^\d]/g,'');
+      return /^\d{10,14}$/.test(s);
+    }
+    async function submitPhone() {
+      const raw = phoneInput.value.trim();
+      const normalized = normalizePhone(raw);
+      if (!normalized || !isProbablyPhone(normalized)) {
+        phoneMsg.style.color = 'var(--danger)';
+        phoneMsg.textContent = 'Please enter a valid mobile number (10 digits) or include country code.';
+        return;
+      }
+      phoneMsg.style.color = 'var(--muted)';
+      phoneMsg.textContent = 'Saving your number...';
+      phoneInput.disabled = true; phoneBtn.disabled = true;
+      try {
+        const resp = await fetch('/save_phone', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ phone: normalized, disease: disease, confidence: confPct })
+        });
+        let j = { ok: resp.ok };
+        try { j = await resp.json(); } catch(e){}
+        if (resp.ok) {
+          // mask last 4 digits visible
+          const digits = normalized.replace(/[^\d]/g,'');
+          const masked = digits.length > 4 ? '***-***-' + digits.slice(-4) : '***-***';
+          phoneMsg.style.color = 'var(--success)';
+          phoneMsg.textContent = `Thanks — we'll arrange a callback to ${masked}. A clinician will reach out soon.`;
+          speak('Thanks. I have saved your number and a doctor will call you soon.', { rate:0.98, pitch:1.02 });
+          const sec = document.getElementById('phone-section');
+          sec.innerHTML = `<div style="font-weight:600;color:#061126">Phone saved: ${escapeHtml(masked)}</div><div class="small-muted" style="margin-top:6px">We will only use this for a doctor callback.</div>`;
+        } else {
+          phoneMsg.style.color = 'var(--danger)';
+          phoneMsg.textContent = j.message || 'Could not save number. Try again later.';
+          phoneInput.disabled = false; phoneBtn.disabled = false;
+        }
+      } catch (err) {
+        phoneMsg.style.color = 'var(--danger)';
+        phoneMsg.textContent = 'Network error while saving. Please try again.';
+        console.error('save phone error', err);
+        phoneInput.disabled = false; phoneBtn.disabled = false;
+      }
+    }
+
+    phoneBtn.addEventListener('click', submitPhone);
+    phoneInput.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') submitPhone(); });
+  }
+}
+
+/* ------------------ chainSpeak helper ------------------
+   Speaks advice as first utterance, and after it ends speaks the short disease phrase (same voice).
+   This avoids repeating "Final diagnosis" and preserves a short natural pause.
+--------------------------------------------------------*/
+function chainSpeak(advice, diseasePhrase) {
+  if (!('speechSynthesis' in window)) {
+    // fallback to sequential calls
+    speak(diseasePhrase);
+    setTimeout(()=>speak(advice), 800);
+    return;
+  }
+  const voice = (window.__tts && window.__tts.voice) ? window.__tts.voice : null;
+
+  // first utterance
+  const ut1 = new SpeechSynthesisUtterance(diseasePhrase);
+  if (voice) ut1.voice = voice;
+  ut1.rate = 0.95;
+  ut1.pitch = 1.02;
+  ut1.lang = (voice && voice.lang) || 'en-IN';
+
+  ut1.onend = () => {
+    // small pause, then speak disease phrase
+    setTimeout(() => {
+      const ut2 = new SpeechSynthesisUtterance(advice);
+      if (voice) ut2.voice = voice;
+      ut2.rate = 0.98;
+      ut2.pitch = 1.03;
+      ut2.lang = (voice && voice.lang) || 'en-IN';
+      try { window.speechSynthesis.cancel(); } catch(e) {}
+      window.speechSynthesis.speak(ut2);
+    }, 350);
+  };
+
+  try {
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(ut1);
+  } catch (e) {
+    console.warn('chainSpeak error, falling back', e);
+    speak(diseasePhrase);
+    setTimeout(()=>speak(advice), 900);
+  }
+}
+
+/* ------------------ Prediction flow: start/stop and /predict call ------------------ */
+
+startBtn.addEventListener("click", async () => {
+  setError('');
+  setStatus('starting...');
+  startBtn.disabled = true;
+
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    setError('No microphone API (navigator.mediaDevices.getUserMedia). Use latest Chrome on localhost/https.');
+    startBtn.disabled = false; setStatus('idle'); return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach(t=>t.stop());
+  } catch (e) {
+    setError('Microphone permission denied or unavailable. Allow microphone access for this site.');
+    startBtn.disabled = false; setStatus('idle'); return;
+  }
+
+  if (SpeechRecognition) {
+    const rec = createRecognizer();
+    if (!rec) { setError('SpeechRecognition could not be initialized.'); startBtn.disabled = false; setStatus('idle'); return; }
+    rec.onstart = () => { setStatus('listening'); stopBtn.style.display='inline-block'; startBtn.style.display='none'; };
+    rec.onend = () => { setStatus('recognition ended'); stopBtn.style.display='none'; startBtn.style.display='inline-block'; startBtn.disabled=false; };
+    rec.onerror = (ev) => { setError('Recognition error: ' + (ev && ev.error ? ev.error : ev)); startBtn.disabled=false; setStatus('idle'); };
+    rec.onresult = (ev) => {
+      try {
+        const text = ev.results[0][0].transcript.trim();
+        transcriptDiv.textContent = text;
+        const tokens = text.match(/\w+/g) || [];
+        fetch("http://127.0.0.1:5005/predict", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ symptoms: tokens }) })
+        .then(r => r.json())
+        .then(handlePredictResponse)
+        .catch(e => { setError("Predict error: " + e); });
+      } catch (ex) { setError('Result processing error: ' + ex); }
+    };
+    try { rec.start(); } catch(e) { setError("Could not start recognition: " + e); startBtn.disabled=false; setStatus('idle'); }
+  } else {
+    setError('SpeechRecognition API not available. Use Chrome desktop.');
+    startBtn.disabled = false; setStatus('idle');
+  }
+});
+
+stopBtn.addEventListener("click", () => {
+  setStatus('stopping...');
+  stopBtn.style.display='none';
+  startBtn.style.display='inline-block';
+});
+
+/* ------------------ Handle /predict and /confirm replies ------------------ */
+
+async function handlePredictResponse(data) {
+  console.log('handlePredictResponse', data);
+  if (data.stage === 'ask_confirmation') {
+    renderAskConfirmation(data);
+  } else if (data.stage === 'final_result') {
+    renderFinalResult(data);
+  } else {
+    assistantDiv.textContent = data.message || JSON.stringify(data);
+  }
+}
+
+// captureConfirmation posts reply and possible_diseases to /confirm
+function captureConfirmation(possibleCandidates) {
+  setStatus('listening for confirmation reply...');
+  const rec = createRecognizer();
+  if (!rec) { setError('No SpeechRecognition available for confirmation'); setStatus('idle'); return; }
+
+  rec.onresult = async (ev) => {
+    const reply = ev.results[0][0].transcript.trim().toLowerCase();
+    transcriptDiv.textContent += "\n\n(confirmation) " + reply;
+    setStatus('sending confirmation to server...');
+    try {
+      const payloadCandidates = window.__lastPossible || possibleCandidates || null;
+      const resp = await fetch('http://127.0.0.1:5005/confirm', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ reply: reply, possible_diseases: payloadCandidates })
+      });
+      const j = await resp.json();
+      if (j.stage === 'final_result') {
+        renderFinalResult(j);
+      } else {
+        assistantDiv.textContent = j.message || JSON.stringify(j);
+      }
+    } catch (e) {
+      setError('Confirm error: ' + e);
+    } finally {
+      setStatus('idle');
+    }
+  };
+  rec.onerror = (ev) => { setError('Confirmation recognition error: ' + (ev && ev.error ? ev.error : ev)); setStatus('idle'); };
+  try { rec.start(); } catch(e) { setError('Could not start confirmation recognition: ' + e); setStatus('idle'); }
+}
+
+/* ------------------ Test button: sample payload to preview UI ------------------ */
+testBtn.addEventListener('click', () => {
+  const sample = {
+    possible_diseases: [
+      {"confirm_symptoms":["Sneezing","Congestion","Sore-throat","Cough"],"disease":"Common Cold (Upper Respiratory Tract Infection)","unique_symptom":"Runny-nose"},
+      {"confirm_symptoms":["Fever","Fatigue","Headache","Chills"],"disease":"Influenza (Flu)","unique_symptom":"Body-ache"}
+    ],
+    question: "Please tell me if you have any of these symptoms: ['Sneezing, Congestion, Sore-throat, Cough', 'Fever, Fatigue, Headache, Chills']",
+    stage: 'ask_confirmation'
+  };
+  transcriptDiv.textContent = 'I have a fever';
+  handlePredictResponse(sample);
+});
+
+/* ------------------ init done ------------------ */
+</script>
+</body>
+</html>
