@@ -1,1 +1,1 @@
-To run, open Medical Voice Assistant and then open back. In back open final-app and run the last cell of that notebook. After that open homepage.html and run that. The app should work.
+To run, open Medical Voice Assistant and then open Back. In Back open final_app.ipynb and run the last cell of that notebook. After that open homepage.html and run that. The app should work.
